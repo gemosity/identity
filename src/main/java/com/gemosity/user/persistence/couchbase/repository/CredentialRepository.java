@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.time.Instant;
-import java.util.UUID;
 
 @Component
 public class CredentialRepository implements ICredentialsPersistence {
@@ -27,7 +26,6 @@ public class CredentialRepository implements ICredentialsPersistence {
     private CouchbaseInstance couchbaseInstance;
     private Collection credentialsCollection;
     private UuidUtil uuidUtil;
-    private String status = "";
 
     @Autowired
     public CredentialRepository(CouchbaseInstance couchbaseInstance, UuidUtil uuidUtil) {
@@ -40,7 +38,6 @@ public class CredentialRepository implements ICredentialsPersistence {
     public void setup() {
         System.out.println("setup");
 
-        status = "setup";
         Bucket credentialsBucket;
 
         try {
@@ -89,9 +86,10 @@ public class CredentialRepository implements ICredentialsPersistence {
         credentialDTO.setUuid(uuid);
         //credentialDTO.setCreated(new Instant(DateUtils.getTimeNow()));
         //credentialDTO.setModified(new java.sql.Timestamp(DateUtils.getTimeNow()));
-        System.out.println("using key " + uuid + " status: " + status);
         MutationResult mutationResult = credentialsCollection.insert(uuid, credentialDTO);
         return credentialDTO;
     }
+
+
 
 }

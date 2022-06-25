@@ -34,28 +34,25 @@ class CredentialsRepositoryTests {
     private Collection credentialCollection;
 
     @Mock
-    Cluster cluster;
+    private Cluster cluster;
 
     @Mock
-    BucketManager bucketManager;
+    private BucketManager bucketManager;
 
     @Mock
-    BucketSettings bucketSettings;
+    private BucketSettings bucketSettings;
 
     @Mock
-    Bucket bucket;
+    private Bucket bucket;
 
     @Mock
     private UuidUtil uuidUtil;
 
     @Mock
-    CollectionManager collectionManager;
+    private CollectionManager collectionManager;
 
     @Mock
-    Scope scope;
-
-    @Mock
-    Collection collection;
+    private Scope scope;
 
     @BeforeEach
     void setUp() {
@@ -64,6 +61,21 @@ class CredentialsRepositoryTests {
 
     @Test
     void contextLoads() {
+    }
+
+    private void MockCouchbaseInstancePostConstruct(String bucketName) {
+        Mockito.when(couchbaseInstance.fetchCluster()).thenReturn(cluster);
+        Mockito.when(cluster.buckets()).thenReturn(bucketManager);
+        Mockito.when(bucketManager.getBucket(bucketName)).thenReturn(bucketSettings);
+        Mockito.when(cluster.bucket(bucketName)).thenReturn(bucket);
+        Mockito.when(couchbaseInstance.fetchBucket(any())).thenReturn(bucket);
+        Mockito.when(bucket.collections()).thenReturn(collectionManager);
+        Mockito.doThrow(new CollectionExistsException("")).when(collectionManager).createCollection(any());
+        Mockito.when(bucket.defaultScope()).thenReturn(scope);
+        Mockito.when(scope.collection(any())).thenReturn(credentialCollection);
+
+        // Call Spring @PostConstruct annotation manually
+        credentialRepository.setup();
     }
 
     @Test
@@ -85,18 +97,15 @@ class CredentialsRepositoryTests {
         CredentialDTO ret = credentialRepository.createCredentials(credentials);
     }
 
-
-    private void MockCouchbaseInstancePostConstruct(String bucketName) {
-        Mockito.when(couchbaseInstance.fetchCluster()).thenReturn(cluster);
-        Mockito.when(cluster.buckets()).thenReturn(bucketManager);
-        Mockito.when(bucketManager.getBucket(bucketName)).thenReturn(bucketSettings);
-        Mockito.when(cluster.bucket(bucketName)).thenReturn(bucket);
-        Mockito.when(couchbaseInstance.fetchBucket(any())).thenReturn(bucket);
-        Mockito.when(bucket.collections()).thenReturn(collectionManager);
-        Mockito.doThrow(new CollectionExistsException("")).when(collectionManager).createCollection(any());
-        Mockito.when(bucket.defaultScope()).thenReturn(scope);
-        Mockito.when(scope.collection(any())).thenReturn(credentialCollection);
-        credentialRepository.setup();
+    @Test
+    void attemptToInsertDuplicateDocument() {
+        /*
+        Returns:
+        - MutationResult once inserted.
+        - Throws: DocumentExistsException, TimeoutException, CouchbaseException
+         */
     }
+
+
 }
 
