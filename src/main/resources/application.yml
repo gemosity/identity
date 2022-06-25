@@ -1,0 +1,31 @@
+server:
+    port: 4000
+    address: 127.0.0.1
+
+# Database settings
+spring:
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://127.0.0.1:3306/identity?allowPublicKeyRetrieval=true
+    username: root
+    password: root
+
+  jpa:
+    show-sql: false
+    properties.hibernate.format_sql: false
+    #logging.level.org.hibernate.type.descriptor.sql=trace
+    # Development Only
+    hibernate.ddl-auto: create
+
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+
+couchbase:
+  username: admin
+  password: rootuser
+  connection: localhost
+  bucketName: identity
+
+
+
+
