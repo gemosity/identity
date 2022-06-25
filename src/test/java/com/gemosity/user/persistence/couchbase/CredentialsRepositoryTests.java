@@ -8,28 +8,17 @@ import com.couchbase.client.java.Scope;
 import com.couchbase.client.java.kv.MutationResult;
 import com.couchbase.client.java.manager.bucket.BucketManager;
 import com.couchbase.client.java.manager.bucket.BucketSettings;
-import com.couchbase.client.java.manager.bucket.BucketType;
 import com.couchbase.client.java.manager.collection.CollectionManager;
-import com.couchbase.client.java.manager.collection.CollectionSpec;
 import com.gemosity.user.dto.CredentialDTO;
-import com.gemosity.user.dto.LoginCredentials;
-import com.gemosity.user.dto.UserDTO;
 import com.gemosity.user.persistence.couchbase.repository.CredentialRepository;
-import com.gemosity.user.service.CredentialsService;
-import com.gemosity.user.service.UsernameBasedAuthImpl;
 import com.gemosity.user.util.UuidUtil;
-import liquibase.pro.packaged.M;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.util.UUID;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+
 @SpringBootTest
 class CredentialsRepositoryTests {
 
