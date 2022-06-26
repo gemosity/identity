@@ -87,8 +87,8 @@ public class CredentialRepository implements ICredentialsPersistence {
 
         try {
             credentialDTO.setUuid(uuid);
-            credentialDTO.setCreated(Instant.now());
-            credentialDTO.setModified(Instant.now());
+            credentialDTO.setCreated(Instant.now().getEpochSecond());
+            credentialDTO.setModified(Instant.now().getEpochSecond());
             mutationResult = credentialsCollection.insert(credentialDTO.getUsername(), credentialDTO);
         } catch (DocumentExistsException e) {
             return null;

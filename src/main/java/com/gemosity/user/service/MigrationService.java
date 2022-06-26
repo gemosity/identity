@@ -73,7 +73,7 @@ public class MigrationService {
         userProfile.setFirstName(legacyCmsUser.getUsername());
         userProfile.setLastName("");
         userProfile.setUuid(legacyCmsUser.getUuid());
-        userProfile.setCreated(legacyCmsUser.getCreatedDate().toInstant());
+        userProfile.setCreated(legacyCmsUser.getCreatedDate().toInstant().getEpochSecond());
 
         return userProfile;
     }
@@ -89,8 +89,8 @@ public class MigrationService {
         credentialDTO.setResetEmailAddress(legacyCmsUser.getResetEmailAddress());
         credentialDTO.setUuid(legacyCmsUser.getUuid());
         credentialDTO.setFailedLoginAttempts(legacyCmsUser.getFailedLoginAttempts());
-        credentialDTO.setLastSuccessfulLogin(legacyCmsUser.getLastSuccessfulLogin().toInstant());
-        credentialDTO.setLastUnsuccessfulLogin(legacyCmsUser.getLastSuccessfulLogin().toInstant());
+        credentialDTO.setLastSuccessfulLogin(legacyCmsUser.getLastSuccessfulLogin().toInstant().getEpochSecond());
+        credentialDTO.setLastUnsuccessfulLogin(legacyCmsUser.getLastSuccessfulLogin().toInstant().getEpochSecond());
 
         return credentialDTO;
     }

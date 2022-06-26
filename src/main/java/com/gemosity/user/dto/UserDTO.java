@@ -3,8 +3,6 @@ package com.gemosity.user.dto;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Instant;
-
 @Getter
 @Setter
 public class UserDTO {
@@ -12,13 +10,13 @@ public class UserDTO {
     private String uuid;
     private String clientUuid;
 
-    private Instant created;
-    private Instant modified;
+    private long created;
+    private long modified;
     private String firstName;
     private String lastName;
 
-    private Instant createdDate;
-    private Instant leavingDate;
+    private long createdDate;
+    private long leavingDate;
 
     private String roles;
 

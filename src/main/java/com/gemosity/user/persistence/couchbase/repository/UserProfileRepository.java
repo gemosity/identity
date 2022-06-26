@@ -90,8 +90,8 @@ public class UserProfileRepository implements IUserPersistence {
 
     @Override
     public UserDTO createUser(UserDTO userDTO) {
-        userDTO.setCreated(Instant.now());
-        userDTO.setModified(Instant.now());
+        userDTO.setCreated(Instant.now().getEpochSecond());
+        userDTO.setModified(Instant.now().getEpochSecond());
 
         if(userDTO.getUuid() != null) {
             MutationResult mutationResult = usersCollection.insert(userDTO.getUuid(), userDTO);
@@ -104,7 +104,7 @@ public class UserProfileRepository implements IUserPersistence {
 
     @Override
     public UserDTO updateUser(UserDTO userDTO) {
-        userDTO.setModified(Instant.now());
+        userDTO.setModified(Instant.now().getEpochSecond());
         MutationResult mutationResult = usersCollection.replace(userDTO.getUuid(), userDTO);
         return userDTO;
     }

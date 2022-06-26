@@ -4,8 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.time.Instant;
-
 @Getter
 @Setter
 public class CredentialDTO {
@@ -22,11 +20,11 @@ public class CredentialDTO {
     private boolean active;
     private String resetEmailAddress;
 
-    private Instant created;
-    private Instant modified;
+    private long created;
+    private long modified;
 
-    private Instant lastSuccessfulLogin;
-    private Instant lastUnsuccessfulLogin;
+    private long lastSuccessfulLogin;
+    private long lastUnsuccessfulLogin;
     private long failedLoginAttempts;
 
 

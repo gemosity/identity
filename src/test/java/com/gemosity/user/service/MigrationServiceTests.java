@@ -77,7 +77,7 @@ class MigrationServiceTests {
         UserDTO userProfile = migratedUserBundle.getUserProfile();
 
         if(userProfile.getUuid().contentEquals(credentials.getUuid())
-               && userProfile.getCreated() == legacyCmsUser.getCreatedDate().toInstant()) {
+               && userProfile.getCreated() == legacyCmsUser.getCreatedDate().toInstant().getEpochSecond()) {
             return true;
         }
 
