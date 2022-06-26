@@ -5,7 +5,6 @@ import com.couchbase.client.java.Scope;
 import com.couchbase.client.java.kv.MutationResult;
 import com.gemosity.user.dto.SessionsDTO;
 import com.gemosity.user.persistence.couchbase.repository.SessionRepository;
-import com.gemosity.user.service.UsernameBasedAuthImpl;
 import com.gemosity.user.util.UuidUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,9 +21,6 @@ public class SessionRepositoryTests extends CouchbaseInstanceMock {
 
     @Mock
     private SessionRepository sessionRepository;
-
-    @Mock
-    private UsernameBasedAuthImpl authService;
 
     @Mock
     private Scope scope;

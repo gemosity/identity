@@ -3,10 +3,8 @@ package com.gemosity.user.persistence.couchbase;
 import com.couchbase.client.java.Collection;
 import com.couchbase.client.java.Scope;
 import com.couchbase.client.java.kv.MutationResult;
-import com.gemosity.user.dto.CredentialDTO;
 import com.gemosity.user.dto.UserDTO;
 import com.gemosity.user.persistence.couchbase.repository.UserProfileRepository;
-import com.gemosity.user.service.UsernameBasedAuthImpl;
 import com.gemosity.user.util.UuidUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,18 +13,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 @SpringBootTest
 class UserProfileRepositoryTests extends CouchbaseInstanceMock  {
 
     @Mock
     private UserProfileRepository userProfileRepository;
-
-    @Mock
-    private UsernameBasedAuthImpl authService;
 
     @Mock
     private Scope scope;
@@ -39,7 +33,6 @@ class UserProfileRepositoryTests extends CouchbaseInstanceMock  {
 
     @Mock
     private MutationResult mutationResult;
-
 
     @BeforeEach
     void setUp() {
@@ -68,7 +61,7 @@ class UserProfileRepositoryTests extends CouchbaseInstanceMock  {
         UserDTO userProfile = new UserDTO();
         userProfile.setUuid(uuid);
 
-        Mockito.when(userProfileCollection.insert(uuid, userProfile)).thenReturn(mutationResult);
+        Mockito.when(userProfileCollection.insert(eq(uuid), any())).thenReturn(mutationResult);
 
         UserDTO ret = userProfileRepository.createUser(userProfile);
         Assertions.assertEquals(uuid, ret.getUuid());

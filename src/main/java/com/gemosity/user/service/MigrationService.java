@@ -1,7 +1,6 @@
 package com.gemosity.user.service;
 
 import com.gemosity.user.dto.CredentialDTO;
-import com.gemosity.user.dto.SessionsDTO;
 import com.gemosity.user.dto.UserDTO;
 import com.gemosity.user.dto.migration.MigratedUserBundle;
 import com.gemosity.user.dto.migration.MigrationResults;
@@ -11,10 +10,11 @@ import com.gemosity.user.persistence.couchbase.repository.UserProfileRepository;
 import com.gemosity.user.persistence.mysql.domain.cms_v1.LegacyCmsUser;
 import com.gemosity.user.persistence.mysql.repository.LegacyUsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.Iterator;
 
+@Service
 public class MigrationService {
 
     private final LegacyUsersRepository legacyUsersRepository;

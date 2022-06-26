@@ -3,7 +3,6 @@ package com.gemosity.user.service;
 import com.gemosity.user.dto.migration.MigrationResults;
 
 import com.gemosity.user.dto.CredentialDTO;
-import com.gemosity.user.dto.SessionsDTO;
 import com.gemosity.user.dto.UserDTO;
 import com.gemosity.user.dto.migration.MigratedUserBundle;
 import com.gemosity.user.persistence.couchbase.repository.CredentialRepository;
