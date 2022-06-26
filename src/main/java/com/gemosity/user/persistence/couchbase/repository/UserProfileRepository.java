@@ -12,10 +12,12 @@ import com.gemosity.user.dto.UserDTO;
 import com.gemosity.user.persistence.IUserPersistence;
 import com.gemosity.user.persistence.couchbase.CouchbaseInstance;
 import com.gemosity.user.util.DateUtils;
+import com.gemosity.user.util.UuidUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.time.Instant;
 import java.util.UUID;
 
 @Component
@@ -24,16 +26,19 @@ public class UserProfileRepository implements IUserPersistence {
     private String bucketName = "user_profiles";
     private String collectionName = "users";
 
+    private UuidUtil uuidUtil;
+
     private CouchbaseInstance couchbaseInstance;
     private Collection usersCollection;
 
     @Autowired
-    public UserProfileRepository(CouchbaseInstance couchbaseInstance) {
+    public UserProfileRepository(CouchbaseInstance couchbaseInstance, UuidUtil uuidUtil) {
         this.couchbaseInstance = couchbaseInstance;
+        this.uuidUtil = uuidUtil;
     }
 
     @PostConstruct
-    private void setup() {
+    public void setup() {
         Bucket identityBucket;
 
         try {
@@ -85,17 +90,21 @@ public class UserProfileRepository implements IUserPersistence {
 
     @Override
     public UserDTO createUser(UserDTO userDTO) {
-        String uuid = UUID.randomUUID().toString();
-        userDTO.setUuid(uuid);
-        userDTO.setCreated(new java.sql.Timestamp(DateUtils.getTimeNow()));
-        userDTO.setModified(new java.sql.Timestamp(DateUtils.getTimeNow()));
-        MutationResult mutationResult = usersCollection.insert(userDTO.getUuid(), userDTO);
+        userDTO.setCreated(Instant.now());
+        userDTO.setModified(Instant.now());
+
+        if(userDTO.getUuid() != null) {
+            MutationResult mutationResult = usersCollection.insert(userDTO.getUuid(), userDTO);
+        } else {
+            return null;
+        }
+
         return userDTO;
     }
 
     @Override
     public UserDTO updateUser(UserDTO userDTO) {
-        userDTO.setModified(new java.sql.Timestamp(DateUtils.getTimeNow()));
+        userDTO.setModified(Instant.now());
         MutationResult mutationResult = usersCollection.replace(userDTO.getUuid(), userDTO);
         return userDTO;
     }

@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
-import java.util.Date;
 
 @Getter
 @Setter
@@ -13,8 +12,8 @@ public class UserDTO {
     private String uuid;
     private String clientUuid;
 
-    private Date created;
-    private Date modified;
+    private Instant created;
+    private Instant modified;
     private String firstName;
     private String lastName;
 

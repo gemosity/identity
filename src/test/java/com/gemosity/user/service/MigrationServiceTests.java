@@ -59,7 +59,6 @@ class MigrationServiceTests {
 
         Assertions.assertEquals(true, verifyCredentials(migratedUserBundle, legacyCmsUser));
         Assertions.assertEquals(true, verifyUserProfile(migratedUserBundle, legacyCmsUser));
-        Assertions.assertEquals(true, verifySessions(migratedUserBundle, legacyCmsUser));
     }
 
     @Test
@@ -73,24 +72,13 @@ class MigrationServiceTests {
         Assertions.assertEquals(legacyCmsUserList.size(), migrationResult.getTotalUsersMigrated());
     }
 
-    private boolean verifySessions(MigratedUserBundle migratedUserBundle, LegacyCmsUser legacyCmsUser) {
-        SessionsDTO sessionsDTO = migratedUserBundle.getSessions();
-
-        if(sessionsDTO.getFailedLoginAttempts() == legacyCmsUser.getFailedLoginAttempts()
-                && sessionsDTO.getLastSuccessfulLogin().getEpochSecond() == legacyCmsUser.getLastSuccessfulLogin().getTime()
-                && sessionsDTO.getLastUnsuccessfulLogin().getEpochSecond() == legacyCmsUser.getLastUnsuccessfulLogin().getTime()) {
-            return true;
-        }
-
-        return false;
-    }
 
     private boolean verifyUserProfile(MigratedUserBundle migratedUserBundle, LegacyCmsUser legacyCmsUser) {
         CredentialDTO credentials = migratedUserBundle.getCredentials();
         UserDTO userProfile = migratedUserBundle.getUserProfile();
 
         if(userProfile.getUuid().contentEquals(credentials.getUuid())
-               && userProfile.getCreated().getTime() == legacyCmsUser.getCreatedDate().getTime()) {
+               && userProfile.getCreated() == legacyCmsUser.getCreatedDate().toInstant()) {
             return true;
         }
 

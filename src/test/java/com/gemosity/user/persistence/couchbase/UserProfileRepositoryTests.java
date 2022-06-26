@@ -1,10 +1,14 @@
 package com.gemosity.user.persistence.couchbase;
 
-import com.gemosity.user.dto.LoginCredentials;
+import com.couchbase.client.java.Collection;
+import com.couchbase.client.java.Scope;
+import com.couchbase.client.java.kv.MutationResult;
+import com.gemosity.user.dto.CredentialDTO;
 import com.gemosity.user.dto.UserDTO;
 import com.gemosity.user.persistence.couchbase.repository.UserProfileRepository;
-import com.gemosity.user.service.UserServiceImpl;
 import com.gemosity.user.service.UsernameBasedAuthImpl;
+import com.gemosity.user.util.UuidUtil;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -13,80 +17,69 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest
-class UserProfileRepositoryTests {
-
-    private UserServiceImpl userService;
+class UserProfileRepositoryTests extends CouchbaseInstanceMock  {
 
     @Mock
-    private UserProfileRepository userPersistence;
+    private UserProfileRepository userProfileRepository;
 
     @Mock
     private UsernameBasedAuthImpl authService;
 
+    @Mock
+    private Scope scope;
+
+    @Mock
+    private Collection userProfileCollection;
+
+    @Mock
+    private UuidUtil uuidUtil;
+
+    @Mock
+    private MutationResult mutationResult;
+
+
     @BeforeEach
     void setUp() {
-        userService = new UserServiceImpl(authService, userPersistence);
+        userProfileRepository = new UserProfileRepository(this.getCouchbaseInstance(), uuidUtil);
+        setupUserProfileRepository("user_profiles");
     }
 
     @Test
     void contextLoads() {
     }
 
-    @Test
-    void loginUser() {
-        // User micro-service should handle login user to support multiple auth methods i.e. email, ldap, oauth etc.
-        // mock service that communicates with Auth micro-service
-        LoginCredentials loginCredentials = new LoginCredentials();
+    private void setupUserProfileRepository(String bucketName) {
+        super.MockCouchbaseInstancePostConstruct(bucketName);
 
-        Mockito.when(authService.loginUser(loginCredentials)).thenReturn(new UserDTO());
+        Mockito.when(scope.collection(any())).thenReturn(userProfileCollection);
+        Mockito.when(this.getBucket().defaultScope()).thenReturn(scope);
 
-        UserDTO userDTO = userService.loginUser(loginCredentials);
+        // Call Spring @PostConstruct annotation manually
+        userProfileRepository.setup();
     }
 
-    @Test
-    void loginWithTenFailedAttempts() {
-        // User micro-service should handle login user to support multiple auth methods i.e. email, ldap, oauth etc.
-    }
 
     @Test
     void createUser() {
-        UserDTO user = new UserDTO();
-        UserDTO success = userService.createUser(user);
-        Mockito.verify(userPersistence).createUser(user);
+        String uuid = "uuid";
+        UserDTO userProfile = new UserDTO();
+        userProfile.setUuid(uuid);
+
+        Mockito.when(userProfileCollection.insert(uuid, userProfile)).thenReturn(mutationResult);
+
+        UserDTO ret = userProfileRepository.createUser(userProfile);
+        Assertions.assertEquals(uuid, ret.getUuid());
     }
 
     @Test
-    void createUserWithNullUsername() {
-        UserDTO user = new UserDTO();
-        user.setFirstName("Joe");
-        user.setLastName("Bloggs");
-        UserDTO success = userService.createUser(user);
-        assertNull(success);
-    }
+    void createUserWithNullUuid() {
+        UserDTO userProfile = new UserDTO();
+        userProfile.setUuid(null);
 
-    @Test
-    void createUserWithNonAlphaNumericUsername() {
-        UserDTO userWithNonAlphaNumericUsername = new UserDTO();
-        userWithNonAlphaNumericUsername.setFirstName("select * from user;");
-        userWithNonAlphaNumericUsername.setLastName("Bloggs");
-        UserDTO success = userService.createUser(userWithNonAlphaNumericUsername);
-        assertNull(success);
-    }
-
-    @Test
-    void updateUser() {
-        UserDTO userToUpdate = new UserDTO();
-        userToUpdate.setFirstName("Joe");
-        userToUpdate.setLastName("Bloggs Blogging");
-        userService.updateUser(userToUpdate);
-    }
-
-    @Test
-    void deleteUser() {
-        UserDTO userToDelete = new UserDTO();
-        userService.deleteUser(userToDelete);
-        //  Mockito.verify(userService).delete(userToDelete);
+        UserDTO ret = userProfileRepository.createUser(userProfile);
+        Assertions.assertEquals(null, ret);
     }
 }

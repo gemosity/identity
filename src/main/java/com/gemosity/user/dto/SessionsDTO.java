@@ -8,8 +8,9 @@ import java.time.Instant;
 @Getter
 @Setter
 public class SessionsDTO {
-    private Instant lastSuccessfulLogin;
-    private Instant lastUnsuccessfulLogin;
-    private long failedLoginAttempts;
-
+    private String sessionUuid;
+    private Instant created;
+    private String userUuid;
+    private Instant lastRequestedTime;
+    private Instant maxInactiveInterval;
 }

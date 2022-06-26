@@ -2,6 +2,7 @@ package com.gemosity.user.persistence.couchbase.repository;
 
 import com.couchbase.client.core.error.BucketNotFoundException;
 import com.couchbase.client.core.error.CollectionExistsException;
+import com.couchbase.client.core.error.DocumentExistsException;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Collection;
 import com.couchbase.client.java.kv.MutationResult;
@@ -11,7 +12,6 @@ import com.couchbase.client.java.manager.collection.CollectionSpec;
 import com.gemosity.user.dto.CredentialDTO;
 import com.gemosity.user.persistence.ICredentialsPersistence;
 import com.gemosity.user.persistence.couchbase.CouchbaseInstance;
-import com.gemosity.user.util.DateUtils;
 import com.gemosity.user.util.UuidUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -82,11 +82,18 @@ public class CredentialRepository implements ICredentialsPersistence {
 
     @Override
     public CredentialDTO createCredentials(CredentialDTO credentialDTO) {
+        MutationResult mutationResult = null;
         String uuid = uuidUtil.generateUuid();
-        credentialDTO.setUuid(uuid);
-        //credentialDTO.setCreated(new Instant(DateUtils.getTimeNow()));
-        //credentialDTO.setModified(new java.sql.Timestamp(DateUtils.getTimeNow()));
-        MutationResult mutationResult = credentialsCollection.insert(uuid, credentialDTO);
+
+        try {
+            credentialDTO.setUuid(uuid);
+            credentialDTO.setCreated(Instant.now());
+            credentialDTO.setModified(Instant.now());
+            mutationResult = credentialsCollection.insert(credentialDTO.getUsername(), credentialDTO);
+        } catch (DocumentExistsException e) {
+            return null;
+        }
+
         return credentialDTO;
     }
 

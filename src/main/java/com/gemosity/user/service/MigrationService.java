@@ -12,6 +12,7 @@ import com.gemosity.user.persistence.mysql.domain.cms_v1.LegacyCmsUser;
 import com.gemosity.user.persistence.mysql.repository.LegacyUsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.Instant;
 import java.util.Iterator;
 
 public class MigrationService {
@@ -45,7 +46,6 @@ public class MigrationService {
             if (migratedUserBundle != null) {
                 credentialRepository.createCredentials(migratedUserBundle.getCredentials());
                 userProfileRepository.createUser(migratedUserBundle.getUserProfile());
-                sessionRepository.createSession(migratedUserBundle.getSessions());
                 totalUsersMigrated++;
             }
         }
@@ -62,18 +62,9 @@ public class MigrationService {
             migratedUserBundle = new MigratedUserBundle();
             migratedUserBundle.setCredentials(migrateCredentials(legacyCmsUser));
             migratedUserBundle.setUserProfile(migrateUserProfile(legacyCmsUser));
-            migratedUserBundle.setSessions(migrateUserSessions(legacyCmsUser));
         }
 
         return migratedUserBundle;
-    }
-
-    private SessionsDTO migrateUserSessions(LegacyCmsUser legacyCmsUser) {
-        SessionsDTO sessionsDTO = new SessionsDTO();
-        sessionsDTO.setFailedLoginAttempts(legacyCmsUser.getFailedLoginAttempts());
-        sessionsDTO.setLastSuccessfulLogin(legacyCmsUser.getLastSuccessfulLogin().toInstant());
-        sessionsDTO.setLastUnsuccessfulLogin(legacyCmsUser.getLastSuccessfulLogin().toInstant());
-        return sessionsDTO;
     }
 
     private UserDTO migrateUserProfile(LegacyCmsUser legacyCmsUser) {
@@ -82,7 +73,7 @@ public class MigrationService {
         userProfile.setFirstName(legacyCmsUser.getUsername());
         userProfile.setLastName("");
         userProfile.setUuid(legacyCmsUser.getUuid());
-        userProfile.setCreated(legacyCmsUser.getCreatedDate());
+        userProfile.setCreated(legacyCmsUser.getCreatedDate().toInstant());
 
         return userProfile;
     }
@@ -97,6 +88,9 @@ public class MigrationService {
         credentialDTO.setPasswordAlgorithm("argon2");
         credentialDTO.setResetEmailAddress(legacyCmsUser.getResetEmailAddress());
         credentialDTO.setUuid(legacyCmsUser.getUuid());
+        credentialDTO.setFailedLoginAttempts(legacyCmsUser.getFailedLoginAttempts());
+        credentialDTO.setLastSuccessfulLogin(legacyCmsUser.getLastSuccessfulLogin().toInstant());
+        credentialDTO.setLastUnsuccessfulLogin(legacyCmsUser.getLastSuccessfulLogin().toInstant());
 
         return credentialDTO;
     }
