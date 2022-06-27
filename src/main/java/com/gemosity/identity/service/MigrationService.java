@@ -12,6 +12,7 @@ import com.gemosity.identity.persistence.mysql.repository.LegacyUsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.Iterator;
 
 @Service
@@ -73,7 +74,12 @@ public class MigrationService {
         userProfile.setFirstName(legacyCmsUser.getUsername());
         userProfile.setLastName("");
         userProfile.setUuid(legacyCmsUser.getUuid());
-        userProfile.setCreated(legacyCmsUser.getCreatedDate().toInstant().getEpochSecond());
+
+        if(legacyCmsUser.getCreatedDate() == null) {
+            userProfile.setCreated(new Date().toInstant().getEpochSecond());
+        } else {
+            userProfile.setCreated(legacyCmsUser.getCreatedDate().toInstant().getEpochSecond());
+        }
 
         return userProfile;
     }
@@ -89,8 +95,19 @@ public class MigrationService {
         credentialDTO.setResetEmailAddress(legacyCmsUser.getResetEmailAddress());
         credentialDTO.setUuid(legacyCmsUser.getUuid());
         credentialDTO.setFailedLoginAttempts(legacyCmsUser.getFailedLoginAttempts());
-        credentialDTO.setLastSuccessfulLogin(legacyCmsUser.getLastSuccessfulLogin().toInstant().getEpochSecond());
-        credentialDTO.setLastUnsuccessfulLogin(legacyCmsUser.getLastSuccessfulLogin().toInstant().getEpochSecond());
+
+        if(legacyCmsUser.getLastSuccessfulLogin() == null) {
+            credentialDTO.setLastSuccessfulLogin(0);
+        } else {
+            credentialDTO.setLastSuccessfulLogin(legacyCmsUser.getLastSuccessfulLogin().toInstant().getEpochSecond());
+
+        }
+
+        if(legacyCmsUser.getLastSuccessfulLogin() == null) {
+            credentialDTO.setLastUnsuccessfulLogin(0);
+        } else {
+            credentialDTO.setLastUnsuccessfulLogin(legacyCmsUser.getLastSuccessfulLogin().toInstant().getEpochSecond());
+        }
 
         return credentialDTO;
     }

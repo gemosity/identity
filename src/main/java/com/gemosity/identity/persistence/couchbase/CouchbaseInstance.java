@@ -24,9 +24,6 @@ public class CouchbaseInstance {
     @Value("${couchbase.connection}")
     private String connectionString;
 
-    @Value("${couchbase.bucketName}")
-    private String bucketName;
-
     private Cluster cluster = null;
 
     @PostConstruct

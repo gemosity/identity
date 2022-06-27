@@ -1,6 +1,7 @@
 package com.gemosity.identity.service;
 
 import com.gemosity.identity.dto.CredentialDTO;
+import com.gemosity.identity.dto.OAuthToken;
 import com.gemosity.identity.persistence.couchbase.repository.CredentialRepository;
 import com.gemosity.identity.dto.LoginCredentials;
 import com.gemosity.identity.dto.UserDTO;
@@ -11,6 +12,7 @@ import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest
 class LoginServiceTests {
@@ -38,7 +40,7 @@ class LoginServiceTests {
         // mock service that communicates with Auth micro-service
         LoginCredentials loginCredentials = new LoginCredentials();
 
-        Mockito.when(authService.loginUser(loginCredentials)).thenReturn(new UserDTO());
+        Mockito.when(authService.authenticate(any(), any())).thenReturn(new OAuthToken());
 
         UserDTO userDTO = credentialsService.loginUser(loginCredentials);
     }

@@ -7,7 +7,6 @@ import com.auth0.jwt.interfaces.Claim;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.platform.commons.util.StringUtils;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,15 +20,15 @@ import java.util.Date;
 import java.util.Map;
 
 @SpringBootTest
-public class AuthServiceTests {
-    private AuthService authService;
+public class JwtServiceTests {
+    private JwtService authService;
 
     @Mock
     private SecretLoader secretLoader;
 
     @BeforeEach
     void setUp() {
-        authService = new AuthService(secretLoader);
+        authService = new JwtService(secretLoader);
     }
 
     @Test

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.time.Instant;
+import java.util.Optional;
 
 @Component
 public class CredentialRepository implements ICredentialsPersistence {
@@ -97,6 +98,23 @@ public class CredentialRepository implements ICredentialsPersistence {
         return credentialDTO;
     }
 
+    @Override
+    public CredentialDTO updateCredentials(CredentialDTO credentialDTO) {
+        MutationResult mutationResult = null;
 
+        try {
+            credentialDTO.setModified(Instant.now().getEpochSecond());
+            mutationResult = credentialsCollection.replace(credentialDTO.getUsername(), credentialDTO);
+        } catch (DocumentExistsException e) {
+            return null;
+        }
+
+        return credentialDTO;
+    }
+
+    @Override
+    public Optional<CredentialDTO> findByDomainAndUsername(String domain, String username) {
+        return Optional.empty();
+    }
 
 }

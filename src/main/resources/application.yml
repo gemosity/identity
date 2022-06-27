@@ -1,5 +1,5 @@
 server:
-    port: 4000
+    port: 9124
     address: 127.0.0.1
 
 # Database settings
@@ -24,7 +24,6 @@ couchbase:
   username: admin
   password: rootuser
   connection: localhost
-  bucketName: identity
 
 
 

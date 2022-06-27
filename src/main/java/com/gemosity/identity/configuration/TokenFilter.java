@@ -1,7 +1,7 @@
 package com.gemosity.identity.configuration;
 
 import com.auth0.jwt.interfaces.Claim;
-import com.gemosity.identity.service.AuthService;
+import com.gemosity.identity.service.JwtService;
 import com.gemosity.identity.util.SecretLoader;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,12 +21,12 @@ import java.util.Map;
 
 public class TokenFilter extends BasicAuthenticationFilter {
 
-    private AuthService authService;
+    private JwtService authService;
 
     public TokenFilter(AuthenticationManager authenticationManager) {
         super(authenticationManager);
         SecretLoader secretLoader = new SecretLoader();
-        authService = new AuthService(secretLoader);
+        authService = new JwtService(secretLoader);
     }
 
     @Override
