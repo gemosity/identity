@@ -23,14 +23,14 @@ import com.gemosity.identity.util.AuthTokenWrapper;
 @Service
 public class UserServiceImpl implements IUserService {
 
-    private final UsernameBasedAuthImpl authService;
+    private final AuthService authService;
     private final CredentialRepository credentialsRepository;
     private final IUserPersistence userPersistence;
 
     private static final int JWT_TOKEN_VALIDITY_IN_MINS = 17;
 
     @Autowired
-    public UserServiceImpl(UsernameBasedAuthImpl authService,
+    public UserServiceImpl(AuthService authService,
                            CredentialRepository credentialsRepository,
                            UserProfileRepository userPersistence) {
         this.authService = authService;
@@ -58,6 +58,7 @@ public class UserServiceImpl implements IUserService {
         if (credentialObj.isPresent()) {
 
             CredentialDTO userCredentials = credentialObj.get();
+            System.out.println("Unpack creds: " + userCredentials.getUsername());
             long failedLoginAttempts = userCredentials.getFailedLoginAttempts();
 
             if (failedLoginAttempts < 10) {
@@ -65,6 +66,7 @@ public class UserServiceImpl implements IUserService {
                 boolean validPassword = passwordEncoder.verify(loginCredentials.getPassword(), userCredentials.getPassword());
 
                 if (validPassword) {
+                    System.out.println("Valid password");
 
                     authenticationToken = authService.authenticate(userCredentials, JWT_TOKEN_VALIDITY_IN_MINS);
 

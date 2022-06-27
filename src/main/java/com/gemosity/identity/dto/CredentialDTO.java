@@ -2,7 +2,6 @@ package com.gemosity.identity.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Getter
 @Setter
@@ -13,7 +12,6 @@ public class CredentialDTO {
     private String domain;
     private String username;
 
-    @JsonIgnore
     private String password;
 
     private String passwordAlgorithm;

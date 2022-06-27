@@ -114,6 +114,8 @@ public class JwtService {
                 // Invalid signing configuration or could not convert claims
                 e.printStackTrace();
             }
+        } else {
+            System.out.println("loggedInUser is NULL");
         }
 
         return oauthToken;

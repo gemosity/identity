@@ -14,6 +14,7 @@ public class AuthService implements IAuthService {
     }
 
     public OAuthToken authenticate(CredentialDTO credentialDTO, int tokenValidityInMinutes) {
+        System.out.println("AuthService authenticate");
         return jwtService.issueToken(credentialDTO, tokenValidityInMinutes);
     }
 }

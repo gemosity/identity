@@ -5,6 +5,7 @@ import com.couchbase.client.core.error.CollectionExistsException;
 import com.couchbase.client.core.error.DocumentExistsException;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Collection;
+import com.couchbase.client.java.kv.GetResult;
 import com.couchbase.client.java.kv.MutationResult;
 import com.couchbase.client.java.manager.bucket.BucketSettings;
 import com.couchbase.client.java.manager.bucket.BucketType;
@@ -114,7 +115,17 @@ public class CredentialRepository implements ICredentialsPersistence {
 
     @Override
     public Optional<CredentialDTO> findByDomainAndUsername(String domain, String username) {
-        return Optional.empty();
+        Optional<CredentialDTO> credentialDTOOptional  = Optional.empty();
+        GetResult result = credentialsCollection.get(username);
+
+        if(result != null) {
+            CredentialDTO dto = result.contentAs(CredentialDTO.class);
+            System.out.println("Found " + dto.getUsername() + " passwd:" + dto.getPassword());
+            credentialDTOOptional = Optional.of(dto);
+        }
+
+        return credentialDTOOptional;
+
     }
 
 }
