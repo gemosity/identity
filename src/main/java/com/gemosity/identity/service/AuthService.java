@@ -10,17 +10,23 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gemosity.identity.dto.CredentialDTO;
 import com.gemosity.identity.dto.OAuthToken;
+import com.gemosity.identity.util.SecretLoader;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
 
 @Service
 public class AuthService {
+
+    private final SecretLoader secretLoader;
+
+    @Autowired
+    public AuthService(SecretLoader secretLoader) {
+        this.secretLoader = secretLoader;
+    }
 
     public  Map<String, Claim> verifyToken(String json_auth_str, String signature) {
 
@@ -62,7 +68,7 @@ public class AuthService {
 
     private DecodedJWT validateToken(String token) {
         DecodedJWT decodedJWT = null;
-        Algorithm algorithm = Algorithm.HMAC256(loadSecret());
+        Algorithm algorithm = Algorithm.HMAC256(secretLoader.loadSecret());
 
         try {
             JWTVerifier verifier = JWT.require(algorithm).withIssuer("Gemosity Ltd").build();
@@ -74,62 +80,44 @@ public class AuthService {
         return decodedJWT;
     }
 
-    public OAuthToken issueToken(CredentialDTO specifiedUser, int validityPeriod) {
+    public OAuthToken issueToken(CredentialDTO loggedInUser, int validityPeriod) {
         OAuthToken oauthToken = null;
 
-        CredentialDTO loggedInUser = specifiedUser;
+        if(loggedInUser != null) {
+
+            Algorithm algorithm = Algorithm.HMAC256(secretLoader.loadSecret());
+
+            try {
+                Calendar expiresAtCal = Calendar.getInstance();
+
+                Date tokenIssuedAt = new Date();
+                expiresAtCal.setTime(tokenIssuedAt);
+                expiresAtCal.add(Calendar.MINUTE, validityPeriod);
+                Date expiresAt = expiresAtCal.getTime();
+
+                String token = JWT.create().withIssuer("Gemosity Ltd")
+                        .withExpiresAt(expiresAt)
+                        .withIssuedAt(tokenIssuedAt)
+                        .withClaim("data", loggedInUser.getUsername())
+                        .withClaim("dom", loggedInUser.getDomain())
+                        .withClaim("id", loggedInUser.getClientUuid())
+                        .sign(algorithm);
 
 
-        Algorithm algorithm = Algorithm.HMAC256(loadSecret());
+                oauthToken = new OAuthToken();
+                oauthToken.setAccess_token(token);
+                oauthToken.setExpires_in(expiresAt);
+                oauthToken.setToken_type("Bearer");
+                //oauthToken.setScope(loggedInUser.getRoles());
 
-
-        try {
-            Calendar expiresAtCal = Calendar.getInstance();
-
-            Date tokenIssuedAt = new Date();
-            expiresAtCal.setTime(tokenIssuedAt);
-            expiresAtCal.add(Calendar.MINUTE, validityPeriod);
-            Date expiresAt = expiresAtCal.getTime();
-
-            String token = JWT.create()
-                    .withIssuer("Gemosity Ltd")
-                    .withExpiresAt(expiresAt)
-                    .withIssuedAt(tokenIssuedAt)
-                    .withClaim("data", loggedInUser.getUsername())
-                    .withClaim("dom", loggedInUser.getDomain())
-                    .withClaim("id", loggedInUser.getClientUuid())
-                    .sign(algorithm);
-
-
-            oauthToken = new OAuthToken();
-            oauthToken.setAccess_token(token);
-            oauthToken.setExpires_in(expiresAt);
-            oauthToken.setToken_type("Bearer");
-            //oauthToken.setScope(loggedInUser.getRoles());
-
-        } catch (JWTCreationException e){
-            // Invalid signing configuration or could not convert claims
-            e.printStackTrace();
+            } catch (JWTCreationException e) {
+                // Invalid signing configuration or could not convert claims
+                e.printStackTrace();
+            }
         }
 
         return oauthToken;
     }
 
-    // byte[] falls outside scope of GC. Hence more secure.
-    private static byte[] loadSecret() {
 
-        try {
-            try {
-                return Files.readAllBytes(Paths.get("/home/identity/secret.txt"));
-            } catch (java.nio.file.NoSuchFileException e) {
-                return Files.readAllBytes(Paths.get("/Users/gemosity/secret.txt"));
-            }
-        }
-        catch (IOException ioe) {
-            ioe.printStackTrace();
-            System.exit(1);
-        }
-
-        return null;
-    }
 }
