@@ -1,18 +1,18 @@
 package com.gemosity.identity.service;
 
 import com.gemosity.identity.dto.CredentialDTO;
-import com.gemosity.identity.dto.OAuthToken;
 import com.gemosity.identity.persistence.couchbase.repository.CredentialRepository;
-import com.gemosity.identity.dto.LoginCredentials;
-import com.gemosity.identity.dto.UserDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 @SpringBootTest
 class LoginServiceTests {
@@ -22,27 +22,13 @@ class LoginServiceTests {
     @Mock
     private CredentialRepository credentialsPersistence;
 
-    @Mock
-    private UsernameBasedAuthImpl authService;
-
     @BeforeEach
     void setUp() {
-        credentialsService = new CredentialsService(authService, credentialsPersistence);
+        credentialsService = new CredentialsService(credentialsPersistence);
     }
 
     @Test
     void contextLoads() {
-    }
-
-    @Test
-    void loginUser() {
-        // User micro-service should handle login user to support multiple auth methods i.e. email, ldap, oauth etc.
-        // mock service that communicates with Auth micro-service
-        LoginCredentials loginCredentials = new LoginCredentials();
-
-        Mockito.when(authService.authenticate(any(), any())).thenReturn(new OAuthToken());
-
-        UserDTO userDTO = credentialsService.loginUser(loginCredentials);
     }
 
     @Test
@@ -105,9 +91,8 @@ class LoginServiceTests {
     void fetchUserByUsername() {
         CredentialDTO user = new CredentialDTO();
         user.setUsername("user1");
-        Mockito.when(credentialsService.fetchCredentials(user.getUsername())).thenReturn(user);
-        CredentialDTO returnedUser = credentialsService.fetchCredentials(user.getUsername());
-        Mockito.verify(credentialsService).fetchCredentials(user.getUsername());
+        Mockito.when(credentialsService.fetchCredentials(eq("domain"),user.getUsername())).thenReturn(Optional.of(user));
+        Optional<CredentialDTO> returnedUser = credentialsService.fetchCredentials("domain", user.getUsername());
         assertEquals(returnedUser, user);
     }
 
@@ -115,7 +100,7 @@ class LoginServiceTests {
     void fetchUserWithNullUsername() {
         CredentialDTO userDTO = new CredentialDTO();
         userDTO.setUsername(null);
-        CredentialDTO user = credentialsService.fetchCredentials(userDTO.getUsername());
+        Optional<CredentialDTO> user = credentialsService.fetchCredentials("domain", userDTO.getUsername());
         assertEquals(user, null);
     }
 }

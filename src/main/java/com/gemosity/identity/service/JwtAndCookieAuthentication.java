@@ -1,10 +1,10 @@
 package com.gemosity.identity.service;
 
+import com.gemosity.identity.dto.CredentialDTO;
 import com.gemosity.identity.dto.LoginCredentials;
 import com.gemosity.identity.dto.OAuthToken;
 import com.gemosity.identity.util.AuthTokenWrapper;
-import lombok.Getter;
-import lombok.Setter;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -12,8 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-@Getter
-@Setter
+@Component
 public class JwtAndCookieAuthentication implements AuthenticationMethod {
     private static final int JWT_TOKEN_VALIDITY_IN_MINS = 17;
 
@@ -23,10 +22,17 @@ public class JwtAndCookieAuthentication implements AuthenticationMethod {
 
     private AuthTokenWrapper wrapper;
 
+    private JwtService jwtService;
+
+    public JwtAndCookieAuthentication(JwtService jwtService) {
+        this.jwtService = jwtService;
+    }
+
     public OAuthToken authenticateUser(HttpServletRequest http_request,
                                        HttpServletResponse http_response,
-                                       LoginCredentials loginCredentials,
-                                       OAuthToken authenticationToken) {
+                                       CredentialDTO loggedInUser) {
+
+        OAuthToken authenticationToken = jwtService.issueToken(loggedInUser, JWT_TOKEN_VALIDITY_IN_MINS);
 
         AuthTokenWrapper wrapper = new AuthTokenWrapper();
         String[] token_parts = authenticationToken.getAccess_token().split("\\.");
@@ -38,7 +44,7 @@ public class JwtAndCookieAuthentication implements AuthenticationMethod {
         http_response.addCookie(signatureCookie);
 
         // Domain cookie
-        Cookie domainCookie = generateCookie("domain", loginCredentials.getDomain(),1000, false);
+        Cookie domainCookie = generateCookie("domain", loggedInUser.getDomain(),1000, false);
         http_response.addCookie(domainCookie);
 
         // Corrupt JWT signature (good copy is stored in HTTP only cookie)

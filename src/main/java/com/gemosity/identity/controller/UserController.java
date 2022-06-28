@@ -37,17 +37,4 @@ public class UserController {
         return userService.deleteUser(userDTO);
     }
 
-    @PostMapping("/api/oauth/login")
-    public OAuthToken login(HttpServletResponse http_response, HttpServletRequest http_request,
-                            @RequestBody LoginCredentials login_credentials) {
-
-        OAuthToken token = userService.loginUser(http_request, http_response, login_credentials);
-        return token;
-    }
-
-    @PostMapping("/api/oauth/logout")
-    public void logout(HttpServletResponse http_response) {
-        userService.logout(http_response);
-    }
-
 }

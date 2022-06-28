@@ -8,9 +8,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public interface IUserService {
-    OAuthToken loginUser(HttpServletRequest http_request,
-                         HttpServletResponse http_response,
-                         LoginCredentials loginCredentials);
+//    OAuthToken loginUser(HttpServletRequest http_request,
+//                         HttpServletResponse http_response,
+//                         LoginCredentials loginCredentials);
 
     UserDTO createUser(UserDTO userObj);
 

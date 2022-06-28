@@ -7,28 +7,27 @@ import com.gemosity.identity.persistence.couchbase.repository.CredentialReposito
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class CredentialsService {
 
     private final CredentialRepository credentialsPersistence;
 
     @Autowired
-    public CredentialsService(UsernameBasedAuthImpl authService, CredentialRepository credentialsPersistence) {
+    public CredentialsService(CredentialRepository credentialsPersistence) {
         this.credentialsPersistence = credentialsPersistence;
     }
 
-    public UserDTO loginUser(LoginCredentials loginCredentials) {
-        return null;
-    }
-
     public CredentialDTO createCredentials(CredentialDTO user) {
-        return null;
+        return credentialsPersistence.createCredentials(user);
     }
 
-    public void updateCredentials(CredentialDTO userToDelete) {
+    public void updateCredentials(CredentialDTO userToUpdate) {
+        credentialsPersistence.updateCredentials(userToUpdate);
     }
 
-    public CredentialDTO fetchCredentials(String username) {
-        return null;
+    public Optional<CredentialDTO> fetchCredentials(String domain, String username) {
+        return credentialsPersistence.findByDomainAndUsername(domain, username);
     }
 }

@@ -79,13 +79,6 @@ public class UserProfileRepository implements IUserPersistence {
         return couchbaseInstance.fetchBucket(bucketName).collection(collectionName);
     }
 
-    public UserDTO test() {
-
-        GetResult result = couchbaseInstance.fetchBucket(bucketName).collection("users").get("nick");
-        return result.contentAs(UserDTO.class);
-    }
-
-
     @Override
     public UserDTO createUser(UserDTO userDTO) {
         userDTO.setCreated(Instant.now().getEpochSecond());

@@ -1,10 +1,14 @@
 package com.gemosity.identity.service;
 
-import com.gemosity.identity.dto.CredentialDTO;
 import com.gemosity.identity.dto.LoginCredentials;
 import com.gemosity.identity.dto.OAuthToken;
-import com.gemosity.identity.dto.UserDTO;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public interface IAuthService {
-    OAuthToken authenticate(CredentialDTO userCredentials, int i);
+    OAuthToken loginUser(HttpServletRequest http_request,
+                                HttpServletResponse http_response,
+                                LoginCredentials loginCredentials);
+    void logout(HttpServletResponse http_response);
 }

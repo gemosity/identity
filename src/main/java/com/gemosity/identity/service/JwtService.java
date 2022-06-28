@@ -28,6 +28,47 @@ public class JwtService {
         this.secretLoader = secretLoader;
     }
 
+    public OAuthToken issueToken(CredentialDTO loggedInUser, int validityPeriod) {
+        OAuthToken oauthToken = null;
+
+        if(loggedInUser != null) {
+
+            Algorithm algorithm = Algorithm.HMAC256(secretLoader.loadSecret());
+
+            try {
+                Calendar expiresAtCal = Calendar.getInstance();
+
+                Date tokenIssuedAt = new Date();
+                expiresAtCal.setTime(tokenIssuedAt);
+                expiresAtCal.add(Calendar.MINUTE, validityPeriod);
+                Date expiresAt = expiresAtCal.getTime();
+
+                String token = JWT.create().withIssuer("Gemosity Ltd")
+                        .withExpiresAt(expiresAt)
+                        .withIssuedAt(tokenIssuedAt)
+                        .withClaim("data", loggedInUser.getUsername())
+                        .withClaim("dom", loggedInUser.getDomain())
+                        .withClaim("id", loggedInUser.getClientUuid())
+                        .sign(algorithm);
+
+
+                oauthToken = new OAuthToken();
+                oauthToken.setAccess_token(token);
+                oauthToken.setExpires_in(expiresAt);
+                oauthToken.setToken_type("Bearer");
+                //oauthToken.setScope(loggedInUser.getRoles());
+
+            } catch (JWTCreationException e) {
+                // Invalid signing configuration or could not convert claims
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("loggedInUser is NULL");
+        }
+
+        return oauthToken;
+    }
+
     public  Map<String, Claim> verifyToken(String json_auth_str, String signature) {
 
         Map<String, Claim> claims = null;
@@ -80,46 +121,7 @@ public class JwtService {
         return decodedJWT;
     }
 
-    public OAuthToken issueToken(CredentialDTO loggedInUser, int validityPeriod) {
-        OAuthToken oauthToken = null;
 
-        if(loggedInUser != null) {
-
-            Algorithm algorithm = Algorithm.HMAC256(secretLoader.loadSecret());
-
-            try {
-                Calendar expiresAtCal = Calendar.getInstance();
-
-                Date tokenIssuedAt = new Date();
-                expiresAtCal.setTime(tokenIssuedAt);
-                expiresAtCal.add(Calendar.MINUTE, validityPeriod);
-                Date expiresAt = expiresAtCal.getTime();
-
-                String token = JWT.create().withIssuer("Gemosity Ltd")
-                        .withExpiresAt(expiresAt)
-                        .withIssuedAt(tokenIssuedAt)
-                        .withClaim("data", loggedInUser.getUsername())
-                        .withClaim("dom", loggedInUser.getDomain())
-                        .withClaim("id", loggedInUser.getClientUuid())
-                        .sign(algorithm);
-
-
-                oauthToken = new OAuthToken();
-                oauthToken.setAccess_token(token);
-                oauthToken.setExpires_in(expiresAt);
-                oauthToken.setToken_type("Bearer");
-                //oauthToken.setScope(loggedInUser.getRoles());
-
-            } catch (JWTCreationException e) {
-                // Invalid signing configuration or could not convert claims
-                e.printStackTrace();
-            }
-        } else {
-            System.out.println("loggedInUser is NULL");
-        }
-
-        return oauthToken;
-    }
 
 
 }
