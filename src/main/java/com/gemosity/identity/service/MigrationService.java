@@ -94,6 +94,7 @@ public class MigrationService {
         credentialDTO.setPasswordAlgorithm("argon2");
         credentialDTO.setResetEmailAddress(legacyCmsUser.getResetEmailAddress());
         credentialDTO.setUuid(legacyCmsUser.getUuid());
+        credentialDTO.setClientUuid(legacyCmsUser.getClientUuid());
         credentialDTO.setFailedLoginAttempts(legacyCmsUser.getFailedLoginAttempts());
 
         if(legacyCmsUser.getLastSuccessfulLogin() == null) {

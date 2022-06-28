@@ -11,4 +11,6 @@ public interface IAuthService {
                                 HttpServletResponse http_response,
                                 LoginCredentials loginCredentials);
     void logout(HttpServletResponse http_response);
+
+    OAuthToken refreshToken(String authToken, String signature, HttpServletResponse http_response);
 }

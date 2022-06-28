@@ -1,7 +1,7 @@
 package com.gemosity.identity.service;
 
+import com.auth0.jwt.interfaces.Claim;
 import com.gemosity.identity.dto.CredentialDTO;
-import com.gemosity.identity.dto.LoginCredentials;
 import com.gemosity.identity.dto.OAuthToken;
 import com.gemosity.identity.util.AuthTokenWrapper;
 import org.springframework.stereotype.Component;
@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.Map;
 
 @Component
 public class JwtAndCookieAuthentication implements AuthenticationMethod {
@@ -19,8 +20,6 @@ public class JwtAndCookieAuthentication implements AuthenticationMethod {
     private static final int JWT_HEADER = 0;
     private static final int JWT_PAYLOAD = 1;
     private static final int JWT_SIGNATURE = 2;
-
-    private AuthTokenWrapper wrapper;
 
     private JwtService jwtService;
 
@@ -55,6 +54,45 @@ public class JwtAndCookieAuthentication implements AuthenticationMethod {
 
        return authenticationToken;
 
+    }
+
+    @Override
+    public OAuthToken refreshUserAuthentication(HttpServletResponse http_response,
+                                                CredentialDTO specifiedUser) {
+
+        OAuthToken oauthToken = jwtService.issueToken(specifiedUser, JWT_TOKEN_VALIDITY_IN_MINS);
+
+        if (oauthToken == null) {
+            System.out.println("Error generating token");
+        } else {
+            //OAuthToken refreshToken = jwtService.issueToken(specifiedUser, 1000);
+
+            String[] token_parts = oauthToken.getAccess_token().split("\\.");
+            Cookie signatureCookie = generateCookie("sessionId", token_parts[JWT_SIGNATURE], JWT_TOKEN_VALIDITY_IN_MINS, true);
+            http_response.addCookie(signatureCookie);
+
+            Cookie domainCookie = generateCookie("domain", specifiedUser.getDomain(),1000, false);
+            http_response.addCookie(domainCookie);
+
+            String tokenWithFakeSignature = replaceAccessTokenSignature(token_parts);
+            oauthToken.setAccess_token(tokenWithFakeSignature);
+        }
+
+        return oauthToken;
+    }
+
+    @Override
+    public Map<String, Claim> verifyAuthentication(String json_auth_str, String signature) {
+        return jwtService.verifyToken(json_auth_str, signature);
+    }
+
+    @Override
+    public void logout(HttpServletResponse http_response) {
+        Cookie signatureCookie = generateCookie("sessionId", null, 0, true);
+        Cookie domainCookie = generateCookie("domain", null, 0, false);
+
+        http_response.addCookie(signatureCookie);
+        http_response.addCookie(domainCookie);
     }
 
     private String replaceAccessTokenSignature(String[] token_parts) {

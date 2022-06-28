@@ -1,5 +1,6 @@
 package com.gemosity.identity.service;
 
+import com.auth0.jwt.interfaces.Claim;
 import com.gemosity.identity.dto.CredentialDTO;
 import com.gemosity.identity.dto.LoginCredentials;
 import com.gemosity.identity.dto.OAuthToken;
@@ -7,6 +8,7 @@ import com.gemosity.identity.util.AuthTokenWrapper;
 import com.gemosity.identity.util.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.time.Instant;
@@ -47,7 +49,7 @@ public class AuthService implements IAuthService {
         if (credentialObj.isPresent()) {
 
             CredentialDTO userCredentials = credentialObj.get();
-            System.out.println("Unpack creds: " + userCredentials.getUsername());
+            System.out.println("Unpack creds: " + userCredentials.getUsername() + " clientUuid: " + userCredentials.getClientUuid());
             long failedLoginAttempts = userCredentials.getFailedLoginAttempts();
 
             if (failedLoginAttempts < 10) {
@@ -100,6 +102,39 @@ public class AuthService implements IAuthService {
 
     @Override
     public void logout(HttpServletResponse http_response) {
+        authenticationMethod.logout(http_response);
+    }
 
+    @Override
+    public OAuthToken refreshToken(String authToken, String signature, HttpServletResponse http_response) {
+        AuthTokenWrapper wrapper = new AuthTokenWrapper();
+        OAuthToken oauthToken = null;
+        Map<String, String> properties = new HashMap<String, String>();
+
+        // Decode the JWT to help identify the logged in user
+        String json_auth_str = authToken.replace("Bearer ", "");
+        Map<String, Claim>  claims = authenticationMethod.verifyAuthentication(json_auth_str, signature);
+
+        if(claims != null) {
+
+            oauthToken = new OAuthToken();
+            String domain = claims.get("dom").asString();
+            String data = claims.get("data").asString();
+            Optional<CredentialDTO> credentialObj = credentialsService.fetchCredentials(domain, data);
+
+            if (credentialObj.isPresent()) {
+                CredentialDTO specifiedUser = credentialObj.get();
+
+                oauthToken = authenticationMethod.refreshUserAuthentication(http_response, specifiedUser);
+
+            } else {
+                properties.put("error_msg", "No match for username");
+                System.out.println("No match for username ");
+            }
+
+            oauthToken.setProperties(properties);
+        }
+
+        return oauthToken;
     }
 }

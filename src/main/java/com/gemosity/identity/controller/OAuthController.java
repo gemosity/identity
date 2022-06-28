@@ -3,9 +3,7 @@ package com.gemosity.identity.controller;
 import com.gemosity.identity.dto.LoginCredentials;
 import com.gemosity.identity.dto.OAuthToken;
 import com.gemosity.identity.service.AuthService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,4 +30,11 @@ public class OAuthController {
         authService.logout(http_response);
     }
 
+    @PostMapping("/api/oauth/token")
+    public OAuthToken refreshToken(@CookieValue(value = "sessionId") String signature,
+                                   @RequestHeader(value="Authorization") String authToken,
+                                   HttpServletResponse http_response) {
+        OAuthToken oauthToken = authService.refreshToken(authToken, signature, http_response);
+        return oauthToken;
+    }
 }
