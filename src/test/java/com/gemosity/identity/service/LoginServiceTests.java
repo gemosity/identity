@@ -91,17 +91,17 @@ class LoginServiceTests {
     void fetchUserByUsername() {
         CredentialDTO user = new CredentialDTO();
         user.setUsername("user1");
-        Mockito.when(credentialsService.fetchCredentials(eq("domain"),user.getUsername())).thenReturn(Optional.of(user));
+        Mockito.when(credentialsPersistence.findByDomainAndUsername(eq("domain"), eq(user.getUsername()))).thenReturn(Optional.of(user));
         Optional<CredentialDTO> returnedUser = credentialsService.fetchCredentials("domain", user.getUsername());
-        assertEquals(returnedUser, user);
+        assertEquals(returnedUser.get(), user);
     }
 
     @Test
     void fetchUserWithNullUsername() {
         CredentialDTO userDTO = new CredentialDTO();
         userDTO.setUsername(null);
-        Optional<CredentialDTO> user = credentialsService.fetchCredentials("domain", userDTO.getUsername());
-        assertEquals(user, null);
+        Optional<CredentialDTO> returnedUser = credentialsService.fetchCredentials("domain", userDTO.getUsername());
+        assertEquals(returnedUser.isPresent(), false);
     }
 }
 

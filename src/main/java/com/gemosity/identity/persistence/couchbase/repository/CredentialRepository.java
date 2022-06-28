@@ -116,12 +116,15 @@ public class CredentialRepository implements ICredentialsPersistence {
     @Override
     public Optional<CredentialDTO> findByDomainAndUsername(String domain, String username) {
         Optional<CredentialDTO> credentialDTOOptional  = Optional.empty();
-        GetResult result = credentialsCollection.get(username);
 
-        if(result != null) {
-            CredentialDTO dto = result.contentAs(CredentialDTO.class);
-            System.out.println("Found " + dto.getUsername() + " passwd:" + dto.getPassword());
-            credentialDTOOptional = Optional.of(dto);
+        if(username != null) {
+            GetResult result = credentialsCollection.get(username);
+
+            if (result != null) {
+                CredentialDTO dto = result.contentAs(CredentialDTO.class);
+                System.out.println("Found " + dto.getUsername() + " passwd:" + dto.getPassword());
+                credentialDTOOptional = Optional.of(dto);
+            }
         }
 
         return credentialDTOOptional;
