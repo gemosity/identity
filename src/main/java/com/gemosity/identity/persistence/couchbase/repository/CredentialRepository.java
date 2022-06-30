@@ -14,6 +14,8 @@ import com.gemosity.identity.dto.CredentialDTO;
 import com.gemosity.identity.persistence.ICredentialsPersistence;
 import com.gemosity.identity.persistence.couchbase.CouchbaseInstance;
 import com.gemosity.identity.util.UuidUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +25,9 @@ import java.util.Optional;
 
 @Component
 public class CredentialRepository implements ICredentialsPersistence {
+
+    private static final Logger log = LogManager.getLogger(CredentialRepository.class);
+
     private String bucketName = "user_credentials";
     private String collectionName = "credentials";
     private CouchbaseInstance couchbaseInstance;
@@ -31,25 +36,25 @@ public class CredentialRepository implements ICredentialsPersistence {
 
     @Autowired
     public CredentialRepository(CouchbaseInstance couchbaseInstance, UuidUtil uuidUtil) {
-        System.out.println("CredentialRepository");
+        log.info("CredentialRepository");
         this.couchbaseInstance = couchbaseInstance;
         this.uuidUtil = uuidUtil;
     }
 
     @PostConstruct
     public void setup() {
-        System.out.println("setup");
+        log.info("setup");
 
         Bucket credentialsBucket;
 
         try {
-            System.out.println("Open identity bucket collection");
+            log.info("Open identity bucket collection");
 
             couchbaseInstance.fetchCluster().buckets().getBucket(bucketName);
             credentialsBucket = couchbaseInstance.fetchCluster().bucket(bucketName);
 
         } catch (BucketNotFoundException e) {
-            System.out.println("Create identity bucket collection");
+            log.info("Creating identity bucket collection");
             e.printStackTrace();
             credentialsBucket = createCredentialsBucket();
         }
@@ -62,7 +67,6 @@ public class CredentialRepository implements ICredentialsPersistence {
     }
 
     private Bucket createCredentialsBucket() {
-        System.out.println("Creating credentials bucket");
         couchbaseInstance.fetchCluster().buckets()
                 .createBucket(BucketSettings.create(bucketName)
                         .bucketType(BucketType.COUCHBASE)
@@ -76,7 +80,6 @@ public class CredentialRepository implements ICredentialsPersistence {
     }
 
     private Collection createCredentialsCollection() {
-        System.out.println("Creating credentials collection");
         CollectionSpec collectionSpec = CollectionSpec.create(collectionName);
         couchbaseInstance.fetchBucket(bucketName).collections().createCollection(collectionSpec);
         return couchbaseInstance.fetchBucket(bucketName).collection(collectionName);
@@ -122,7 +125,6 @@ public class CredentialRepository implements ICredentialsPersistence {
 
             if (result != null) {
                 CredentialDTO dto = result.contentAs(CredentialDTO.class);
-                System.out.println("Found " + dto.getUsername() + " passwd:" + dto.getPassword());
                 credentialDTOOptional = Optional.of(dto);
             }
         }

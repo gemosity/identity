@@ -11,6 +11,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gemosity.identity.dto.CredentialDTO;
 import com.gemosity.identity.dto.OAuthToken;
 import com.gemosity.identity.util.SecretLoader;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,7 @@ import java.util.Map;
 
 @Service
 public class JwtService {
+    private static final Logger log = LogManager.getLogger(JwtAndCookieAuthentication.class);
 
     private final SecretLoader secretLoader;
 
@@ -63,7 +66,7 @@ public class JwtService {
                 e.printStackTrace();
             }
         } else {
-            System.out.println("loggedInUser is NULL");
+            log.error("loggedInUser is NULL");
         }
 
         return oauthToken;
@@ -98,10 +101,10 @@ public class JwtService {
                     e.printStackTrace();
                 }
             } else {
-                System.out.println("Access Token is NULL " + json_auth_str);
+                log.error("Access Token is NULL " + json_auth_str);
             }
         } else {
-            System.out.println("Auth Token missing " + json_auth_str);
+            log.error("Auth Token missing " + json_auth_str);
         }
 
         return claims;

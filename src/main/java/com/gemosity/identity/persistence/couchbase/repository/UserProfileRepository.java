@@ -12,6 +12,8 @@ import com.gemosity.identity.dto.UserDTO;
 import com.gemosity.identity.persistence.IUserPersistence;
 import com.gemosity.identity.persistence.couchbase.CouchbaseInstance;
 import com.gemosity.identity.util.UuidUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +22,8 @@ import java.time.Instant;
 
 @Component
 public class UserProfileRepository implements IUserPersistence {
+
+    private static final Logger log = LogManager.getLogger(UserProfileRepository.class);
 
     private String bucketName = "user_profiles";
     private String collectionName = "users";
@@ -40,13 +44,13 @@ public class UserProfileRepository implements IUserPersistence {
         Bucket identityBucket;
 
         try {
-            System.out.println("Open identity bucket collection");
+            log.info("Open identity bucket collection");
 
             couchbaseInstance.fetchCluster().buckets().getBucket(bucketName);
             identityBucket = couchbaseInstance.fetchCluster().bucket(bucketName);
 
         } catch (BucketNotFoundException e) {
-            System.out.println("Create identity bucket collection");
+            log.info("Creating identity bucket collection");
             e.printStackTrace();
             identityBucket = createIdentityBucket();
         }
@@ -59,7 +63,6 @@ public class UserProfileRepository implements IUserPersistence {
     }
 
     private Bucket createIdentityBucket() {
-        System.out.println("Creating users bucket");
         couchbaseInstance.fetchCluster().buckets()
                 .createBucket(BucketSettings.create(bucketName)
                         .bucketType(BucketType.COUCHBASE)
@@ -73,7 +76,7 @@ public class UserProfileRepository implements IUserPersistence {
     }
 
     private Collection createUsersCollection() {
-        System.out.println("Creating users collection");
+        log.info("Creating users collection");
         CollectionSpec collectionSpec = CollectionSpec.create("users");
         couchbaseInstance.fetchBucket(bucketName).collections().createCollection(collectionSpec);
         return couchbaseInstance.fetchBucket(bucketName).collection(collectionName);

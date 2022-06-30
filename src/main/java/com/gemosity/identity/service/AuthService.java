@@ -4,8 +4,11 @@ import com.auth0.jwt.interfaces.Claim;
 import com.gemosity.identity.dto.CredentialDTO;
 import com.gemosity.identity.dto.LoginCredentials;
 import com.gemosity.identity.dto.OAuthToken;
+import com.gemosity.identity.persistence.couchbase.CouchbaseInstance;
 import com.gemosity.identity.util.AuthTokenWrapper;
 import com.gemosity.identity.util.PasswordEncoder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.Cookie;
@@ -18,6 +21,8 @@ import java.util.Optional;
 
 @Service
 public class AuthService implements IAuthService {
+
+    private static final Logger log = LogManager.getLogger(AuthService.class);
 
     private static final int JWT_TOKEN_VALIDITY_IN_MINS = 17;
 
@@ -43,13 +48,12 @@ public class AuthService implements IAuthService {
 
         Instant instant = Instant.now();
 
-        System.out.println("domain:" + loginCredentials.getDomain() + " user " + loginCredentials.getUsername());
+        log.info("domain:" + loginCredentials.getDomain() + " user " + loginCredentials.getUsername());
         Optional<CredentialDTO> credentialObj = credentialsService.fetchCredentials(loginCredentials.getDomain(), loginCredentials.getUsername());
 
         if (credentialObj.isPresent()) {
 
             CredentialDTO userCredentials = credentialObj.get();
-            System.out.println("Unpack creds: " + userCredentials.getUsername() + " clientUuid: " + userCredentials.getClientUuid());
             long failedLoginAttempts = userCredentials.getFailedLoginAttempts();
 
             if (failedLoginAttempts < 10) {
@@ -57,12 +61,12 @@ public class AuthService implements IAuthService {
                 boolean validPassword = passwordEncoder.verify(loginCredentials.getPassword(), userCredentials.getPassword());
 
                 if (validPassword) {
-                    System.out.println("Valid password");
+                    log.info("Password is valid");
 
                     authenticationToken = authenticationMethod.authenticateUser(http_request, http_response, userCredentials);
 
                     if (authenticationToken == null) {
-                        System.out.println("Error generating authenticationToken");
+                        log.error("Unable to generate authenticationToken");
                     } else {
 
                         properties.put("last_successful_login", Long.toString(userCredentials.getLastSuccessfulLogin()));
@@ -82,13 +86,13 @@ public class AuthService implements IAuthService {
                 }
             } else {
                 properties.put("error_msg", "Account locked.");
-                System.out.println("Account locked. Too many failed login attempts for " + loginCredentials.getUsername());
+                log.info("Account locked. Too many failed login attempts for " + loginCredentials.getUsername());
                 userCredentials.setLastUnsuccessfulLogin(instant.getEpochSecond());
                 credentialsService.updateCredentials(userCredentials);
             }
         } else {
             properties.put("error_msg", "No match for username/password combination");
-            System.out.println("No match for username: " + loginCredentials.getUsername());
+            log.info("No match for username: " + loginCredentials.getUsername());
         }
 
         authenticationToken.setProperties(properties);
@@ -129,7 +133,7 @@ public class AuthService implements IAuthService {
 
             } else {
                 properties.put("error_msg", "No match for username");
-                System.out.println("No match for username ");
+                log.info("No match for username ");
             }
 
             oauthToken.setProperties(properties);

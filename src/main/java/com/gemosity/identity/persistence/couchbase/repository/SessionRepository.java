@@ -12,6 +12,8 @@ import com.gemosity.identity.dto.SessionsDTO;
 import com.gemosity.identity.persistence.ISessionPersistence;
 import com.gemosity.identity.persistence.couchbase.CouchbaseInstance;
 import com.gemosity.identity.util.UuidUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -25,27 +27,29 @@ public class SessionRepository implements ISessionPersistence {
     private Collection sessionsCollection;
     private UuidUtil uuidUtil;
 
+    private static final Logger log = LogManager.getLogger(SessionRepository.class);
+
     @Autowired
     public SessionRepository(CouchbaseInstance couchbaseInstance, UuidUtil uuidUtil) {
-        System.out.println("SessionRepository");
+        log.info("SessionRepository");
         this.couchbaseInstance = couchbaseInstance;
         this.uuidUtil = uuidUtil;
     }
 
     @PostConstruct
     public void setup() {
-        System.out.println("setup");
+        log.info("setup");
 
         Bucket credentialsBucket;
 
         try {
-            System.out.println("Open session bucket collection");
+            log.info("Open session bucket collection");
 
             couchbaseInstance.fetchCluster().buckets().getBucket(bucketName);
             credentialsBucket = couchbaseInstance.fetchCluster().bucket(bucketName);
 
         } catch (BucketNotFoundException e) {
-            System.out.println("Create session bucket collection");
+            log.info("Creating session bucket collection");
             e.printStackTrace();
             credentialsBucket = createSessionsBucket();
         }
@@ -58,7 +62,6 @@ public class SessionRepository implements ISessionPersistence {
     }
 
     private Bucket createSessionsBucket() {
-        System.out.println("Creating sessions bucket");
         couchbaseInstance.fetchCluster().buckets()
                 .createBucket(BucketSettings.create(bucketName)
                         .bucketType(BucketType.EPHEMERAL)
@@ -72,7 +75,6 @@ public class SessionRepository implements ISessionPersistence {
     }
 
     private Collection createSessionsCollection() {
-        System.out.println("Creating sessions collection");
         CollectionSpec collectionSpec = CollectionSpec.create(collectionName);
         couchbaseInstance.fetchBucket(bucketName).collections().createCollection(collectionSpec);
         return couchbaseInstance.fetchBucket(bucketName).collection(collectionName);

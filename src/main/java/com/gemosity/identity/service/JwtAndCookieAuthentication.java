@@ -4,6 +4,8 @@ import com.auth0.jwt.interfaces.Claim;
 import com.gemosity.identity.dto.CredentialDTO;
 import com.gemosity.identity.dto.OAuthToken;
 import com.gemosity.identity.util.AuthTokenWrapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.Cookie;
@@ -15,6 +17,9 @@ import java.util.Map;
 
 @Component
 public class JwtAndCookieAuthentication implements AuthenticationMethod {
+
+    private static final Logger log = LogManager.getLogger(JwtAndCookieAuthentication.class);
+
     private static final int JWT_TOKEN_VALIDITY_IN_MINS = 17;
 
     private static final int JWT_HEADER = 0;
@@ -63,7 +68,7 @@ public class JwtAndCookieAuthentication implements AuthenticationMethod {
         OAuthToken oauthToken = jwtService.issueToken(specifiedUser, JWT_TOKEN_VALIDITY_IN_MINS);
 
         if (oauthToken == null) {
-            System.out.println("Error generating token");
+            log.error("Unable to generate refresh token");
         } else {
             //OAuthToken refreshToken = jwtService.issueToken(specifiedUser, 1000);
 
