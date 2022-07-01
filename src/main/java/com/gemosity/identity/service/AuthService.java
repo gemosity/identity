@@ -1,17 +1,10 @@
 package com.gemosity.identity.service;
 
 import com.auth0.jwt.interfaces.Claim;
-import com.gemosity.identity.dto.CredentialDTO;
-import com.gemosity.identity.dto.LoginCredentials;
-import com.gemosity.identity.dto.OAuthToken;
-import com.gemosity.identity.persistence.couchbase.CouchbaseInstance;
-import com.gemosity.identity.util.AuthTokenWrapper;
-import com.gemosity.identity.util.PasswordEncoder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.time.Instant;
@@ -19,12 +12,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.gemosity.identity.dto.CredentialDTO;
+import com.gemosity.identity.dto.LoginCredentials;
+import com.gemosity.identity.dto.OAuthAuthorizeRequest;
+import com.gemosity.identity.dto.OAuthToken;
+import com.gemosity.identity.util.AuthTokenWrapper;
+import com.gemosity.identity.util.PasswordEncoder;
+
 @Service
 public class AuthService implements IAuthService {
 
     private static final Logger log = LogManager.getLogger(AuthService.class);
-
-    private static final int JWT_TOKEN_VALIDITY_IN_MINS = 17;
 
     private final AuthenticationMethod authenticationMethod;
     private final CredentialsService credentialsService;
@@ -140,5 +138,17 @@ public class AuthService implements IAuthService {
         }
 
         return oauthToken;
+    }
+
+    public OAuthToken authorizeClient(OAuthAuthorizeRequest oAuthAuthorizeRequest,
+                                      HttpServletResponse http_response) {
+        String responseType = oAuthAuthorizeRequest.getResponse_type();
+
+        // HTTP 302 FOUND - Redirect to application URI
+        http_response.setStatus(HttpServletResponse.SC_FOUND);
+        http_response.setHeader("Location",
+                oAuthAuthorizeRequest.getRedirect_uri() + "/callback?code" + "AUTHORIZATION_CODE");
+
+        return new OAuthToken();
     }
 }

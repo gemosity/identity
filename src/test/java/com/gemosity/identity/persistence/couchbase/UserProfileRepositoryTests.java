@@ -3,7 +3,7 @@ package com.gemosity.identity.persistence.couchbase;
 import com.couchbase.client.java.Collection;
 import com.couchbase.client.java.Scope;
 import com.couchbase.client.java.kv.MutationResult;
-import com.gemosity.identity.dto.UserDTO;
+import com.gemosity.identity.dto.UserProfile;
 import com.gemosity.identity.persistence.couchbase.repository.UserProfileRepository;
 import com.gemosity.identity.util.UuidUtil;
 import org.junit.jupiter.api.Assertions;
@@ -58,21 +58,21 @@ class UserProfileRepositoryTests extends CouchbaseInstanceMock  {
     @Test
     void createUser() {
         String uuid = "uuid";
-        UserDTO userProfile = new UserDTO();
+        UserProfile userProfile = new UserProfile();
         userProfile.setUuid(uuid);
 
         Mockito.when(userProfileCollection.insert(eq(uuid), any())).thenReturn(mutationResult);
 
-        UserDTO ret = userProfileRepository.createUser(userProfile);
+        UserProfile ret = userProfileRepository.createUser(userProfile);
         Assertions.assertEquals(uuid, ret.getUuid());
     }
 
     @Test
     void createUserWithNullUuid() {
-        UserDTO userProfile = new UserDTO();
+        UserProfile userProfile = new UserProfile();
         userProfile.setUuid(null);
 
-        UserDTO ret = userProfileRepository.createUser(userProfile);
+        UserProfile ret = userProfileRepository.createUser(userProfile);
         Assertions.assertEquals(null, ret);
     }
 }

@@ -1,7 +1,7 @@
 package com.gemosity.identity.service;
 
 import com.gemosity.identity.dto.CredentialDTO;
-import com.gemosity.identity.dto.UserDTO;
+import com.gemosity.identity.dto.UserProfile;
 import com.gemosity.identity.dto.migration.MigratedUserBundle;
 import com.gemosity.identity.dto.migration.MigrationResults;
 import com.gemosity.identity.persistence.couchbase.repository.CredentialRepository;
@@ -68,17 +68,17 @@ public class MigrationService {
         return migratedUserBundle;
     }
 
-    private UserDTO migrateUserProfile(LegacyCmsUser legacyCmsUser) {
-        UserDTO userProfile = new UserDTO();
+    private UserProfile migrateUserProfile(LegacyCmsUser legacyCmsUser) {
+        UserProfile userProfile = new UserProfile();
 
-        userProfile.setFirstName(legacyCmsUser.getUsername());
-        userProfile.setLastName("");
+        userProfile.setGiven_name(legacyCmsUser.getUsername());
+        userProfile.setFamily_name("");
         userProfile.setUuid(legacyCmsUser.getUuid());
 
         if(legacyCmsUser.getCreatedDate() == null) {
-            userProfile.setCreated(new Date().toInstant().getEpochSecond());
+            userProfile.setCreated_at(new Date().toInstant().getEpochSecond());
         } else {
-            userProfile.setCreated(legacyCmsUser.getCreatedDate().toInstant().getEpochSecond());
+            userProfile.setCreated_at(legacyCmsUser.getCreatedDate().toInstant().getEpochSecond());
         }
 
         return userProfile;

@@ -22,11 +22,13 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         /*
-              /migrate
+              ToDO Remove /migrate from permitAll !!!
          */
 
         // Specify credentials needed for different routes
         http.authorizeRequests()
+                .antMatchers("/authorize").permitAll()
+                .antMatchers("/oauth/token").permitAll()
                 .antMatchers("/api/oauth/login").permitAll()
                 .antMatchers("/api/oauth/logout").permitAll()
                 .antMatchers("/migrate").permitAll()

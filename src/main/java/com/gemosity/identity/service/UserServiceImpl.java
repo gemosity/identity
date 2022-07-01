@@ -1,24 +1,12 @@
 package com.gemosity.identity.service;
 
-import com.gemosity.identity.util.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-import com.gemosity.identity.dto.CredentialDTO;
-import com.gemosity.identity.dto.OAuthToken;
 import com.gemosity.identity.persistence.IUserPersistence;
 import com.gemosity.identity.persistence.couchbase.repository.CredentialRepository;
 import com.gemosity.identity.persistence.couchbase.repository.UserProfileRepository;
-import com.gemosity.identity.dto.LoginCredentials;
-import com.gemosity.identity.dto.UserDTO;
-import com.gemosity.identity.util.AuthTokenWrapper;
+import com.gemosity.identity.dto.UserProfile;
 
 @Service
 public class UserServiceImpl implements IUserService {
@@ -38,31 +26,23 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public UserDTO createUser(UserDTO userDTO) {
+    public UserProfile createUser(UserProfile userDTO) {
         return userPersistence.createUser(userDTO);
     }
 
     @Override
-    public UserDTO updateUser(UserDTO user) {
+    public UserProfile updateUser(UserProfile user) {
         return null;
     }
 
     @Override
-    public UserDTO deleteUser(UserDTO user) {
+    public UserProfile deleteUser(UserProfile user) {
         return null;
     }
 
     @Override
-    public UserDTO fetchUser(String username) {
-
-        //return userRepository.findByUsername(username);
-        return null;
+    public UserProfile findByUuid(String userUuid) {
+        return userPersistence.findByUuid(userUuid);
     }
-
-    @Override
-    public void logout(HttpServletResponse http_response) {
-
-    }
-
 
 }

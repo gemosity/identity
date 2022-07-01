@@ -2,7 +2,7 @@ package com.gemosity.identity.dto.migration;
 
 import com.gemosity.identity.dto.CredentialDTO;
 import com.gemosity.identity.dto.SessionsDTO;
-import com.gemosity.identity.dto.UserDTO;
+import com.gemosity.identity.dto.UserProfile;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,6 +10,6 @@ import lombok.Setter;
 @Setter
 public class MigratedUserBundle {
     private CredentialDTO credentials;
-    private UserDTO userProfile;
+    private UserProfile userProfile;
     private SessionsDTO sessions;
 }

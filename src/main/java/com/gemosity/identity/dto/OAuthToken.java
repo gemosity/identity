@@ -9,9 +9,11 @@ import java.util.Map;
 @Getter
 @Setter
 public class OAuthToken {
-    String access_token;
-    String token_type;
-    Date expires_in;
-    String scope;
-    Map<String, String> properties;
+    private String access_token;
+    private String refresh_token;
+    private String id_token;
+    private String token_type;
+    private Date expires_in;
+    private String scope;
+    private Map<String, String> properties;
 }

@@ -1,10 +1,11 @@
 package com.gemosity.identity.persistence;
 
-import com.gemosity.identity.dto.UserDTO;
+import com.gemosity.identity.dto.UserProfile;
 
 public interface IUserPersistence {
-    UserDTO createUser(UserDTO userDTO);
-    UserDTO updateUser(UserDTO userDTO);
-    UserDTO deleteUser(UserDTO userDTO);
+    UserProfile createUser(UserProfile userDTO);
+    UserProfile updateUser(UserProfile userDTO);
+    UserProfile deleteUser(UserProfile userDTO);
 
+    UserProfile findByUuid(String userUuid);
 }

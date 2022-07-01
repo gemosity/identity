@@ -1,6 +1,6 @@
 package com.gemosity.identity.persistence.mysql;
 
-import com.gemosity.identity.dto.UserDTO;
+import com.gemosity.identity.dto.UserProfile;
 import com.gemosity.identity.persistence.IUserPersistence;
 import com.gemosity.identity.persistence.mysql.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,18 +17,23 @@ public class MySQLPersistence implements IUserPersistence {
     }
 
     @Override
-    public UserDTO createUser(UserDTO userDTO) {
+    public UserProfile createUser(UserProfile userDTO) {
 
         return null;
     }
 
     @Override
-    public UserDTO updateUser(UserDTO userDTO) {
+    public UserProfile updateUser(UserProfile userDTO) {
         return null;
     }
 
     @Override
-    public UserDTO deleteUser(UserDTO userDTO) {
+    public UserProfile deleteUser(UserProfile userDTO) {
+        return null;
+    }
+
+    @Override
+    public UserProfile findByUuid(String userUuid) {
         return null;
     }
 

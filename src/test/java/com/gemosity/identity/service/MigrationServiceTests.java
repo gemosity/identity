@@ -3,7 +3,7 @@ package com.gemosity.identity.service;
 import com.gemosity.identity.dto.migration.MigrationResults;
 
 import com.gemosity.identity.dto.CredentialDTO;
-import com.gemosity.identity.dto.UserDTO;
+import com.gemosity.identity.dto.UserProfile;
 import com.gemosity.identity.dto.migration.MigratedUserBundle;
 import com.gemosity.identity.persistence.couchbase.repository.CredentialRepository;
 import com.gemosity.identity.persistence.couchbase.repository.SessionRepository;
@@ -74,10 +74,10 @@ class MigrationServiceTests {
 
     private boolean verifyUserProfile(MigratedUserBundle migratedUserBundle, LegacyCmsUser legacyCmsUser) {
         CredentialDTO credentials = migratedUserBundle.getCredentials();
-        UserDTO userProfile = migratedUserBundle.getUserProfile();
+        UserProfile userProfile = migratedUserBundle.getUserProfile();
 
         if(userProfile.getUuid().contentEquals(credentials.getUuid())
-               && userProfile.getCreated() == legacyCmsUser.getCreatedDate().toInstant().getEpochSecond()) {
+               && userProfile.getCreated_at() == legacyCmsUser.getCreatedDate().toInstant().getEpochSecond()) {
             return true;
         }
 

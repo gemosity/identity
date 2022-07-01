@@ -1,11 +1,11 @@
 package com.gemosity.identity.controller;
 
-import com.gemosity.identity.dto.LoginCredentials;
+import com.gemosity.identity.dto.OAuthAuthorizeRequest;
 import com.gemosity.identity.dto.OAuthToken;
+import com.gemosity.identity.dto.TokenRequest;
 import com.gemosity.identity.service.AuthService;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @RestController
@@ -17,24 +17,20 @@ public class OAuthController {
         this.authService = authService;
     }
 
-    @PostMapping("/api/oauth/login")
-    public OAuthToken login(HttpServletResponse http_response, HttpServletRequest http_request,
-                            @RequestBody LoginCredentials login_credentials) {
-
-        OAuthToken token = authService.loginUser(http_request, http_response, login_credentials);
-        return token;
-    }
-
-    @PostMapping("/api/oauth/logout")
-    public void logout(HttpServletResponse http_response) {
-        authService.logout(http_response);
-    }
-
-    @PostMapping("/api/oauth/token")
-    public OAuthToken refreshToken(@CookieValue(value = "sessionId") String signature,
+    // Request accessToken, refreshToken
+    @PostMapping("/oauth/token")
+    public OAuthToken requestToken(@CookieValue(value = "sessionId") String signature,
                                    @RequestHeader(value="Authorization") String authToken,
+                                   @RequestBody TokenRequest tokenRequest,
                                    HttpServletResponse http_response) {
-        OAuthToken oauthToken = authService.refreshToken(authToken, signature, http_response);
-        return oauthToken;
+        return authService.refreshToken(authToken, signature, http_response);
+    }
+
+    @GetMapping("/authorize")
+    public void authorizeClient(HttpServletResponse http_response) {
+        OAuthToken oauthToken = authService.authorizeClient(null, http_response);
+
+        // Redirects to Gemosity Identity Login page to allow user to enter credentials
+        // - might also redirect to social media login page if that login type is used
     }
 }

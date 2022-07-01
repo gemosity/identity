@@ -7,7 +7,7 @@ import com.couchbase.client.java.kv.GetResult;
 import com.couchbase.client.java.kv.MutationResult;
 import com.couchbase.client.java.manager.bucket.*;
 import com.couchbase.client.java.manager.collection.CollectionSpec;
-import com.gemosity.identity.dto.UserDTO;
+import com.gemosity.identity.dto.UserProfile;
 
 import com.gemosity.identity.persistence.IUserPersistence;
 import com.gemosity.identity.persistence.couchbase.CouchbaseInstance;
@@ -83,9 +83,9 @@ public class UserProfileRepository implements IUserPersistence {
     }
 
     @Override
-    public UserDTO createUser(UserDTO userDTO) {
-        userDTO.setCreated(Instant.now().getEpochSecond());
-        userDTO.setModified(Instant.now().getEpochSecond());
+    public UserProfile createUser(UserProfile userDTO) {
+        userDTO.setCreated_at(Instant.now().getEpochSecond());
+        userDTO.setUpdated_at(Instant.now().getEpochSecond());
 
         if(userDTO.getUuid() != null) {
             MutationResult mutationResult = usersCollection.insert(userDTO.getUuid(), userDTO);
@@ -97,16 +97,22 @@ public class UserProfileRepository implements IUserPersistence {
     }
 
     @Override
-    public UserDTO updateUser(UserDTO userDTO) {
-        userDTO.setModified(Instant.now().getEpochSecond());
+    public UserProfile updateUser(UserProfile userDTO) {
+        userDTO.setUpdated_at(Instant.now().getEpochSecond());
         MutationResult mutationResult = usersCollection.replace(userDTO.getUuid(), userDTO);
         return userDTO;
     }
 
     @Override
-    public UserDTO deleteUser(UserDTO userDTO) {
+    public UserProfile deleteUser(UserProfile userDTO) {
         MutationResult mutationResult = usersCollection.remove(userDTO.getUuid());
         userDTO.setUuid(null);
         return userDTO;
+    }
+
+    @Override
+    public UserProfile findByUuid(String userUuid) {
+        GetResult getResult =  couchbaseInstance.fetchBucket(bucketName).collection(collectionName).get(userUuid);
+        return getResult.contentAs(UserProfile.class);
     }
 }
