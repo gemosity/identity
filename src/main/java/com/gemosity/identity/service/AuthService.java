@@ -42,7 +42,7 @@ public class AuthService implements IAuthService {
         OAuthToken authenticationToken = new OAuthToken();
         Map<String, String> properties = new HashMap<String, String>();
 
-        System.out.println(getIpAddress(http_request));
+        log.info("Login user from " + getIpAddress(http_request));
 
         Instant instant = Instant.now();
 
@@ -123,7 +123,6 @@ public class AuthService implements IAuthService {
             Claim dataClaim = claims.get("data");
 
             if(domainClaim != null && dataClaim != null) {
-                System.out.println("create oauth token");
                 oauthToken = new OAuthToken();
 
                 Optional<CredentialDTO> credentialObj = credentialsService.fetchCredentials(domainClaim.asString(),
