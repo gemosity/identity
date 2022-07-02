@@ -119,22 +119,28 @@ public class AuthService implements IAuthService {
 
         if(claims != null) {
 
-            oauthToken = new OAuthToken();
-            String domain = claims.get("dom").asString();
-            String data = claims.get("data").asString();
-            Optional<CredentialDTO> credentialObj = credentialsService.fetchCredentials(domain, data);
+            Claim domainClaim = claims.get("dom");
+            Claim dataClaim = claims.get("data");
 
-            if (credentialObj.isPresent()) {
-                CredentialDTO specifiedUser = credentialObj.get();
+            if(domainClaim != null && dataClaim != null) {
+                System.out.println("create oauth token");
+                oauthToken = new OAuthToken();
 
-                oauthToken = authenticationMethod.refreshUserAuthentication(http_response, specifiedUser);
+                Optional<CredentialDTO> credentialObj = credentialsService.fetchCredentials(domainClaim.asString(),
+                        dataClaim.asString());
 
-            } else {
-                properties.put("error_msg", "No match for username");
-                log.info("No match for username ");
+                if (credentialObj.isPresent()) {
+                    CredentialDTO specifiedUser = credentialObj.get();
+
+                    oauthToken = authenticationMethod.refreshUserAuthentication(http_response, specifiedUser);
+
+                } else {
+                    properties.put("error_msg", "No match for username");
+                    log.info("No match for username ");
+                }
+
+                oauthToken.setProperties(properties);
             }
-
-            oauthToken.setProperties(properties);
         }
 
         return oauthToken;
