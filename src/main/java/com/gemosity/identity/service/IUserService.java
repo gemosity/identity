@@ -13,6 +13,7 @@ public interface IUserService {
     UserProfile deleteUser(UserProfile user);
 
     UserProfile findByUuid(String userUuid);
+    Map<String, Object> findMapByUuid(String userUuid) ;
 
     String generateIDToken(String userUuid);
 

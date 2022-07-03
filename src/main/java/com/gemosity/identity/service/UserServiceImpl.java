@@ -45,15 +45,38 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public UserProfile findByUuid(String userUuid) {
-        return userPersistence.findByUuid(userUuid);
-    }
-
-    @Override
     public String generateIDToken(String userUuid) {
         UserProfile userProfile = userPersistence.findByUuid(userUuid);
 
         return null;
+    }
+
+    @Override
+    public Map<String, Object> findMapByUuid(String userUuid) {
+        Map<String, Object> userProfileMap = userPersistence.findMapByUuid(userUuid);
+        String name = "";
+
+        if(userProfileMap.get("name") == null) {
+            if(userProfileMap.get("given_name") != null) {
+                if (userProfileMap.get("family_name") != null) {
+                    name = (String) userProfileMap.get("given_name");
+                    name = name.trim();
+                    name = name + " " + userProfileMap.get("family_name");
+                } else {
+                    name = (String) userProfileMap.get("given_name");
+                    name = name.trim();
+                }
+
+                userProfileMap.put("name", name);
+            }
+        }
+
+        return userProfileMap;
+    }
+
+    @Override
+    public UserProfile findByUuid(String userUuid) {
+        return userPersistence.findByUuid(userUuid);
     }
 
     @Override
@@ -62,11 +85,12 @@ public class UserServiceImpl implements IUserService {
         Map<String, Claim> claims = jwtService.verifyToken(authToken, signature);
 
         String subUuid = claims.get("sub").asString();
-
-        UserProfile userProfile = userPersistence.findByUuid(subUuid);
+        Map<String, Object> userProfile = userPersistence.findMapByUuid(subUuid);
+        //UserProfile userProfile = userPersistence.findByUuid(subUuid);
         String idTokenJWT = null;
+
         if(contentType.contentEquals("application/jwt")) {
-             idTokenJWT = jwtService.generateIDToken(userProfile);
+             idTokenJWT = jwtService.generateIDToken(userProfile, "profile");
              retValue = new HashMap<>();
              retValue.put("id", idTokenJWT);
         }

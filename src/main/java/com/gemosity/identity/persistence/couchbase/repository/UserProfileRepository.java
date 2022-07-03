@@ -3,6 +3,7 @@ package com.gemosity.identity.persistence.couchbase.repository;
 import com.couchbase.client.core.error.BucketNotFoundException;
 import com.couchbase.client.core.error.CollectionExistsException;
 import com.couchbase.client.java.*;
+import com.couchbase.client.java.json.JsonObject;
 import com.couchbase.client.java.kv.GetResult;
 import com.couchbase.client.java.kv.MutationResult;
 import com.couchbase.client.java.manager.bucket.*;
@@ -19,6 +20,8 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class UserProfileRepository implements IUserPersistence {
@@ -114,5 +117,27 @@ public class UserProfileRepository implements IUserPersistence {
     public UserProfile findByUuid(String userUuid) {
         GetResult getResult =  couchbaseInstance.fetchBucket(bucketName).collection(collectionName).get(userUuid);
         return getResult.contentAs(UserProfile.class);
+    }
+
+    @Override
+    public Map<String, Object> findMapByUuid(String userUuid) {
+        GetResult getResult =  couchbaseInstance.fetchBucket(bucketName).collection(collectionName).get(userUuid);
+        JsonObject couchbaseJsonObj = getResult.contentAsObject();
+        Map<String, Object> userProfileMap = new HashMap<>();
+
+        for(String propertyName: couchbaseJsonObj.getNames()) {
+            Object documentNode = couchbaseJsonObj.get(propertyName);
+
+            if(documentNode instanceof com.couchbase.client.java.json.JsonArray) {
+                com.couchbase.client.java.json.JsonArray jsonArray
+                        = (com.couchbase.client.java.json.JsonArray) documentNode;
+                userProfileMap.put(propertyName, jsonArray.toList());
+
+            } else {
+                userProfileMap.put(propertyName, documentNode);
+            }
+        }
+
+        return userProfileMap;
     }
 }

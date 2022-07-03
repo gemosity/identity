@@ -65,8 +65,10 @@ public class AuthService implements IAuthService {
                 if (validPassword) {
                     log.info("Password is valid");
 
-                    UserProfile userProfile = userService.findByUuid(userCredentials.getUuid());
-                    String idToken = jwtService.generateIDToken(userProfile);
+                    //UserProfile userProfile = userService.findByUuid(userCredentials.getUuid());
+                    Map<String, Object> userProfile = userService.findMapByUuid(userCredentials.getUuid());
+
+                    String idToken = jwtService.generateIDToken(userProfile, "profile");
                     System.out.println(idToken);
 
                     authenticationToken = authenticationMethod.authenticateUser(http_request,
