@@ -27,11 +27,17 @@ public class AuthServiceTests {
     private CredentialsService credentialsService;
 
     @Mock
+    private UserServiceImpl userService;
+
+    @Mock
     private JwtAndCookieAuthentication jwtAndCookieAuthentication;
+
+    @Mock
+    private JwtService jwtService;
 
     @BeforeEach
     void setUp() {
-        authService = new AuthService(credentialsService, jwtAndCookieAuthentication);
+        authService = new AuthService(credentialsService, userService, jwtAndCookieAuthentication, jwtService);
     }
 
     @Test
@@ -56,7 +62,7 @@ public class AuthServiceTests {
 
         OAuthToken authenticationToken = new OAuthToken();
         Mockito.when(credentialsService.fetchCredentials(eq("domain"), eq("username"))).thenReturn(credentialObj);
-        Mockito.when(jwtAndCookieAuthentication.authenticateUser(any(), any(), any())).thenReturn(authenticationToken);
+        Mockito.when(jwtAndCookieAuthentication.authenticateUser(any(), any(), any(), any())).thenReturn(authenticationToken);
 
         OAuthToken oauthToken = authService.loginUser(http_request, http_response, loginCredentials);
 
@@ -89,7 +95,7 @@ public class AuthServiceTests {
 
         OAuthToken authenticationToken = new OAuthToken();
         Mockito.when(credentialsService.fetchCredentials(eq("domain"), eq("username"))).thenReturn(credentialObj);
-        Mockito.when(jwtAndCookieAuthentication.authenticateUser(any(), any(), any())).thenReturn(authenticationToken);
+        Mockito.when(jwtAndCookieAuthentication.authenticateUser(any(), any(), any(), any())).thenReturn(authenticationToken);
 
         OAuthToken oauthToken = authService.loginUser(http_request, http_response, loginCredentials);
         Assertions.assertEquals("Account locked.", oauthToken.getProperties().get("error_msg"));
@@ -113,7 +119,7 @@ public class AuthServiceTests {
 
         OAuthToken authenticationToken = new OAuthToken();
         Mockito.when(credentialsService.fetchCredentials(eq("domain"), eq("username"))).thenReturn(credentialObj);
-        Mockito.when(jwtAndCookieAuthentication.authenticateUser(any(), any(), any())).thenReturn(authenticationToken);
+        Mockito.when(jwtAndCookieAuthentication.authenticateUser(any(), any(), any(), any())).thenReturn(authenticationToken);
 
         OAuthToken oauthToken = authService.loginUser(http_request, http_response, loginCredentials);
         Assertions.assertEquals("No match for username/password combination", oauthToken.getProperties().get("error_msg"));
@@ -138,7 +144,7 @@ public class AuthServiceTests {
 
         OAuthToken authenticationToken = new OAuthToken();
         Mockito.when(credentialsService.fetchCredentials(eq("domain"), eq("username"))).thenReturn(credentialObj);
-        Mockito.when(jwtAndCookieAuthentication.authenticateUser(any(), any(), any())).thenReturn(authenticationToken);
+        Mockito.when(jwtAndCookieAuthentication.authenticateUser(any(), any(), any(), any())).thenReturn(authenticationToken);
 
         OAuthToken oauthToken = authService.loginUser(http_request, http_response, loginCredentials);
         Assertions.assertEquals("No match for username/password combination", oauthToken.getProperties().get("error_msg"));

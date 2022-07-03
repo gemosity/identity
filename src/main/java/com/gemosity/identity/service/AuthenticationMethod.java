@@ -13,7 +13,8 @@ import java.util.Map;
 public interface AuthenticationMethod {
     OAuthToken authenticateUser(HttpServletRequest http_request,
                                 HttpServletResponse http_response,
-                                CredentialDTO loginCredentials);
+                                CredentialDTO loginCredentials,
+                                String id_token);
 
     OAuthToken refreshUserAuthentication(HttpServletResponse http_response,
                                          CredentialDTO specifiedUser);

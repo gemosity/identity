@@ -1,6 +1,9 @@
 package com.gemosity.identity.service;
 
 import com.auth0.jwt.interfaces.Claim;
+import com.gemosity.identity.dto.*;
+import com.gemosity.identity.persistence.IUserPersistence;
+import com.gemosity.identity.persistence.couchbase.repository.UserProfileRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
@@ -12,10 +15,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import com.gemosity.identity.dto.CredentialDTO;
-import com.gemosity.identity.dto.LoginCredentials;
-import com.gemosity.identity.dto.OAuthAuthorizeRequest;
-import com.gemosity.identity.dto.OAuthToken;
 import com.gemosity.identity.util.AuthTokenWrapper;
 import com.gemosity.identity.util.PasswordEncoder;
 
@@ -25,11 +24,17 @@ public class AuthService implements IAuthService {
     private static final Logger log = LogManager.getLogger(AuthService.class);
 
     private final AuthenticationMethod authenticationMethod;
+    private final IUserService userService;
     private final CredentialsService credentialsService;
+    private final JwtService jwtService;
 
-    public AuthService(CredentialsService credentialsService, JwtAndCookieAuthentication jwtService) {
+    public AuthService(CredentialsService credentialsService, UserServiceImpl userService,
+                       JwtAndCookieAuthentication jwtAndCookieAuthentication,
+                       JwtService jwtService) {
         this.credentialsService = credentialsService;
-        this.authenticationMethod = jwtService;
+        this.userService = userService;
+        this.authenticationMethod = jwtAndCookieAuthentication;
+        this.jwtService = jwtService;
     }
 
     public OAuthToken loginUser(HttpServletRequest http_request,
@@ -47,7 +52,8 @@ public class AuthService implements IAuthService {
         Instant instant = Instant.now();
 
         log.info("domain:" + loginCredentials.getDomain() + " user " + loginCredentials.getUsername());
-        Optional<CredentialDTO> credentialObj = credentialsService.fetchCredentials(loginCredentials.getDomain(), loginCredentials.getUsername());
+        Optional<CredentialDTO> credentialObj = credentialsService.fetchCredentials(loginCredentials.getDomain(),
+                loginCredentials.getUsername());
 
         if (credentialObj.isPresent()) {
 
@@ -61,7 +67,11 @@ public class AuthService implements IAuthService {
                 if (validPassword) {
                     log.info("Password is valid");
 
-                    authenticationToken = authenticationMethod.authenticateUser(http_request, http_response, userCredentials);
+                    UserProfile userProfile = userService.findByUuid(userCredentials.getUuid());
+                    authenticationToken = authenticationMethod.authenticateUser(http_request,
+                            http_response,
+                            userCredentials,
+                            jwtService.generateIDToken(userProfile));
 
                     if (authenticationToken == null) {
                         log.error("Unable to generate authenticationToken");
@@ -145,9 +155,29 @@ public class AuthService implements IAuthService {
         return oauthToken;
     }
 
+    @Override
+    public OAuthToken requestToken(TokenRequest tokenRequest, String authToken, String signature,
+                                   HttpServletResponse http_response) {
+        // Client may request different scope
+        // tokenRequest.getScope()
+
+        OAuthToken oAuthToken = null;
+        if(tokenRequest.getGrant_type() == "refresh_token") {
+            oAuthToken = refreshToken(authToken, signature, http_response);
+        }
+
+        // 'authorization_code' - Convert token returned from /authorize into an Access Token.
+        // 'refresh_token' - Passed in a refresh_token returns a new Access Token and Refresh Token.
+        // 'client_credentials' - Returns an Access Token. No refresh token is included.
+
+        return oAuthToken;
+    }
+
     public OAuthToken authorizeClient(OAuthAuthorizeRequest oAuthAuthorizeRequest,
                                       HttpServletResponse http_response) {
         String responseType = oAuthAuthorizeRequest.getResponse_type();
+
+        // Login user, check user wants to authorize client
 
         // HTTP 302 FOUND - Redirect to application URI
         http_response.setStatus(HttpServletResponse.SC_FOUND);
@@ -156,4 +186,5 @@ public class AuthService implements IAuthService {
 
         return new OAuthToken();
     }
+
 }

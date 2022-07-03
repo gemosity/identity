@@ -34,9 +34,10 @@ public class JwtAndCookieAuthentication implements AuthenticationMethod {
 
     public OAuthToken authenticateUser(HttpServletRequest http_request,
                                        HttpServletResponse http_response,
-                                       CredentialDTO loggedInUser) {
+                                       CredentialDTO loggedInUser,
+                                       String id_token) {
 
-        OAuthToken authenticationToken = jwtService.issueToken(loggedInUser, JWT_TOKEN_VALIDITY_IN_MINS);
+        OAuthToken authenticationToken = jwtService.issueToken(loggedInUser, id_token, JWT_TOKEN_VALIDITY_IN_MINS);
 
         AuthTokenWrapper wrapper = new AuthTokenWrapper();
         String[] token_parts = authenticationToken.getAccess_token().split("\\.");
@@ -65,7 +66,7 @@ public class JwtAndCookieAuthentication implements AuthenticationMethod {
     public OAuthToken refreshUserAuthentication(HttpServletResponse http_response,
                                                 CredentialDTO specifiedUser) {
 
-        OAuthToken oauthToken = jwtService.issueToken(specifiedUser, JWT_TOKEN_VALIDITY_IN_MINS);
+        OAuthToken oauthToken = jwtService.issueToken(specifiedUser, null, JWT_TOKEN_VALIDITY_IN_MINS);
 
         if (oauthToken == null) {
             log.error("Unable to generate refresh token");

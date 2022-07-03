@@ -10,12 +10,14 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gemosity.identity.dto.CredentialDTO;
 import com.gemosity.identity.dto.OAuthToken;
+import com.gemosity.identity.dto.UserProfile;
 import com.gemosity.identity.util.SecretLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
@@ -31,7 +33,41 @@ public class JwtService {
         this.secretLoader = secretLoader;
     }
 
-    public OAuthToken issueToken(CredentialDTO loggedInUser, int validityPeriod) {
+    public String generateIDToken(UserProfile userProfile) {
+        String id_token = null;
+
+        if(userProfile != null) {
+
+            Algorithm algorithm = Algorithm.HMAC256(secretLoader.loadSecret());
+
+            try {
+                Calendar expiresAtCal = Calendar.getInstance();
+
+                Date tokenIssuedAt = new Date();
+                expiresAtCal.setTime(tokenIssuedAt);
+                expiresAtCal.add(Calendar.HOUR, 10);
+                Date expiresAt = expiresAtCal.getTime();
+
+                id_token = JWT.create().withIssuer("Gemosity Ltd")
+                        .withExpiresAt(expiresAt)
+                        .withIssuedAt(tokenIssuedAt)
+                        .withClaim("given_name", userProfile.getGiven_name())
+                        .withClaim("family_name", userProfile.getFamily_name())
+                        .withClaim("name", userProfile.getGiven_name() + " " + userProfile.getFamily_name())
+                        .withClaim("role", new ArrayList<>().add(userProfile.getRoles()))
+                        .sign(algorithm);
+            } catch (JWTCreationException e) {
+                // Invalid signing configuration or could not convert claims
+                e.printStackTrace();
+            }
+        } else {
+            log.error("userProfile is NULL");
+        }
+
+        return id_token;
+    }
+
+    public OAuthToken issueToken(CredentialDTO loggedInUser, String id_token, int validityPeriod) {
         OAuthToken oauthToken = null;
 
         if(loggedInUser != null) {
@@ -57,6 +93,7 @@ public class JwtService {
 
                 oauthToken = new OAuthToken();
                 oauthToken.setAccess_token(token);
+                oauthToken.setId_token(id_token);
                 oauthToken.setExpires_in(expiresAt);
                 oauthToken.setToken_type("Bearer");
                 //oauthToken.setScope(loggedInUser.getRoles());

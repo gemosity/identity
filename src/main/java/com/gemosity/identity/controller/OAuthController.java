@@ -1,6 +1,5 @@
 package com.gemosity.identity.controller;
 
-import com.gemosity.identity.dto.OAuthAuthorizeRequest;
 import com.gemosity.identity.dto.OAuthToken;
 import com.gemosity.identity.dto.TokenRequest;
 import com.gemosity.identity.service.AuthService;
@@ -23,7 +22,7 @@ public class OAuthController {
                                    @RequestHeader(value="Authorization") String authToken,
                                    @RequestBody TokenRequest tokenRequest,
                                    HttpServletResponse http_response) {
-        return authService.refreshToken(authToken, signature, http_response);
+        return authService.requestToken(tokenRequest, authToken, signature, http_response);
     }
 
     @GetMapping("/authorize")
@@ -31,6 +30,7 @@ public class OAuthController {
         OAuthToken oauthToken = authService.authorizeClient(null, http_response);
 
         // Redirects to Gemosity Identity Login page to allow user to enter credentials
+        // - perhaps could have a special console login for access via ssh?
         // - might also redirect to social media login page if that login type is used
     }
 }
