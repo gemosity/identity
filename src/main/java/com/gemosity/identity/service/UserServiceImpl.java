@@ -1,5 +1,6 @@
 package com.gemosity.identity.service;
 
+import com.auth0.jwt.interfaces.Claim;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -8,6 +9,7 @@ import com.gemosity.identity.persistence.couchbase.repository.CredentialReposito
 import com.gemosity.identity.persistence.couchbase.repository.UserProfileRepository;
 import com.gemosity.identity.dto.UserProfile;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -56,12 +58,20 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public Map<String, Object> fetchUserProfile(String authToken, String signature, String contentType) {
-        UserProfile userProfile = userPersistence.findByUuid("");
+        Map<String, Object> retValue = null;
+        Map<String, Claim> claims = jwtService.verifyToken(authToken, signature);
 
+        String subUuid = claims.get("sub").asString();
+
+        UserProfile userProfile = userPersistence.findByUuid(subUuid);
+        String idTokenJWT = null;
         if(contentType.contentEquals("application/jwt")) {
-            String idTokenJWT = jwtService.generateIDToken(userProfile);
+             idTokenJWT = jwtService.generateIDToken(userProfile);
+             retValue = new HashMap<>();
+             retValue.put("id", idTokenJWT);
         }
-        return null;
+
+        return retValue;
     }
 
 }

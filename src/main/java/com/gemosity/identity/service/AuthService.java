@@ -2,8 +2,6 @@ package com.gemosity.identity.service;
 
 import com.auth0.jwt.interfaces.Claim;
 import com.gemosity.identity.dto.*;
-import com.gemosity.identity.persistence.IUserPersistence;
-import com.gemosity.identity.persistence.couchbase.repository.UserProfileRepository;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
@@ -68,10 +66,13 @@ public class AuthService implements IAuthService {
                     log.info("Password is valid");
 
                     UserProfile userProfile = userService.findByUuid(userCredentials.getUuid());
+                    String idToken = jwtService.generateIDToken(userProfile);
+                    System.out.println(idToken);
+
                     authenticationToken = authenticationMethod.authenticateUser(http_request,
                             http_response,
                             userCredentials,
-                            jwtService.generateIDToken(userProfile));
+                            idToken);
 
                     if (authenticationToken == null) {
                         log.error("Unable to generate authenticationToken");

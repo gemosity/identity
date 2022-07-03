@@ -17,10 +17,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class JwtService {
@@ -48,13 +45,15 @@ public class JwtService {
                 expiresAtCal.add(Calendar.HOUR, 10);
                 Date expiresAt = expiresAtCal.getTime();
 
+                String name = userProfile.getGiven_name() + " " + userProfile.getFamily_name();
+
                 id_token = JWT.create().withIssuer("Gemosity Ltd")
                         .withExpiresAt(expiresAt)
                         .withIssuedAt(tokenIssuedAt)
                         .withClaim("given_name", userProfile.getGiven_name())
                         .withClaim("family_name", userProfile.getFamily_name())
-                        .withClaim("name", userProfile.getGiven_name() + " " + userProfile.getFamily_name())
-                        .withClaim("role", new ArrayList<>().add(userProfile.getRoles()))
+                        .withClaim("name", name.trim())
+                        .withClaim("role", userProfile.getRoles())
                         .sign(algorithm);
             } catch (JWTCreationException e) {
                 // Invalid signing configuration or could not convert claims
@@ -88,6 +87,7 @@ public class JwtService {
                         .withClaim("data", loggedInUser.getUsername())
                         .withClaim("dom", loggedInUser.getDomain())
                         .withClaim("id", loggedInUser.getClientUuid())
+                        .withClaim("sub", loggedInUser.getUuid())
                         .sign(algorithm);
 
 

@@ -12,6 +12,7 @@ import com.gemosity.identity.persistence.mysql.repository.LegacyUsersRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 
@@ -45,7 +46,8 @@ public class MigrationService {
             MigratedUserBundle migratedUserBundle = migrateUser(legacyCmsUserItr.next());
 
             if (migratedUserBundle != null) {
-                credentialRepository.createCredentials(migratedUserBundle.getCredentials());
+                CredentialDTO credentials = credentialRepository.createCredentials(migratedUserBundle.getCredentials());
+                migratedUserBundle.getUserProfile().setUuid(credentials.getUuid());
                 userProfileRepository.createUser(migratedUserBundle.getUserProfile());
                 totalUsersMigrated++;
             }
@@ -74,6 +76,8 @@ public class MigrationService {
         userProfile.setGiven_name(legacyCmsUser.getUsername());
         userProfile.setFamily_name("");
         userProfile.setUuid(legacyCmsUser.getUuid());
+        userProfile.setRoles(new ArrayList<>());
+        userProfile.getRoles().add(legacyCmsUser.getRoles());
 
         if(legacyCmsUser.getCreatedDate() == null) {
             userProfile.setCreated_at(new Date().toInstant().getEpochSecond());
@@ -87,13 +91,13 @@ public class MigrationService {
     private CredentialDTO migrateCredentials(LegacyCmsUser legacyCmsUser) {
         CredentialDTO credentialDTO = new CredentialDTO();
 
+        credentialDTO.setUuid(legacyCmsUser.getUuid());
         credentialDTO.setActive(legacyCmsUser.isActive());
         credentialDTO.setUsername(legacyCmsUser.getUsername());
         credentialDTO.setDomain(legacyCmsUser.getDomain());
         credentialDTO.setPassword(legacyCmsUser.getPassword());
         credentialDTO.setPasswordAlgorithm("argon2");
         credentialDTO.setResetEmailAddress(legacyCmsUser.getResetEmailAddress());
-        credentialDTO.setUuid(legacyCmsUser.getUuid());
         credentialDTO.setClientUuid(legacyCmsUser.getClientUuid());
         credentialDTO.setFailedLoginAttempts(legacyCmsUser.getFailedLoginAttempts());
 
