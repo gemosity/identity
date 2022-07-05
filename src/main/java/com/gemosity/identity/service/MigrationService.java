@@ -47,9 +47,12 @@ public class MigrationService {
 
             if (migratedUserBundle != null) {
                 CredentialDTO credentials = credentialRepository.createCredentials(migratedUserBundle.getCredentials());
-                migratedUserBundle.getUserProfile().setUuid(credentials.getUuid());
-                userProfileRepository.createUser(migratedUserBundle.getUserProfile());
-                totalUsersMigrated++;
+
+                if(credentials != null) {
+                    migratedUserBundle.getUserProfile().setUuid(credentials.getUuid());
+                    userProfileRepository.createUser(migratedUserBundle.getUserProfile());
+                    totalUsersMigrated++;
+                }
             }
         }
 

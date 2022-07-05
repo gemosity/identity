@@ -86,7 +86,6 @@ public class UserServiceImpl implements IUserService {
 
         String subUuid = claims.get("sub").asString();
         Map<String, Object> userProfile = userPersistence.findMapByUuid(subUuid);
-        //UserProfile userProfile = userPersistence.findByUuid(subUuid);
         String idTokenJWT = null;
 
         if(contentType.contentEquals("application/jwt")) {

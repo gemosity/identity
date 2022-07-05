@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
+
 @SpringBootTest
 class MigrationServiceTests {
 
@@ -62,10 +64,14 @@ class MigrationServiceTests {
 
     @Test
     void migrateAllLegacyUsers() {
+        CredentialDTO credentials = new CredentialDTO();
+        credentials.setUuid(UUID.randomUUID().toString());
         List<LegacyCmsUser> legacyCmsUserList = new ArrayList<>();
         legacyCmsUserList.add(generateLegacyUser("admin"));
         legacyCmsUserList.add(generateLegacyUser("test"));
         Mockito.when(legacyUsersRepository.findAll()).thenReturn(legacyCmsUserList);
+        Mockito.when(credentialRepository.createCredentials(any())).thenReturn(credentials);
+
         MigrationResults migrationResult = migrationService.migrateUsers();
 
         Assertions.assertEquals(legacyCmsUserList.size(), migrationResult.getTotalUsersMigrated());

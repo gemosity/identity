@@ -11,14 +11,12 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gemosity.identity.dto.CredentialDTO;
 import com.gemosity.identity.dto.OAuthToken;
-import com.gemosity.identity.dto.UserProfile;
 import com.gemosity.identity.util.SecretLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 @Service
@@ -108,8 +106,14 @@ public class JwtService {
                 expiresAtCal.add(Calendar.MINUTE, validityPeriod);
                 Date expiresAt = expiresAtCal.getTime();
 
-                String token = JWT.create().withIssuer("Gemosity Ltd").withExpiresAt(expiresAt).withIssuedAt(tokenIssuedAt).withClaim("data", loggedInUser.getUsername()).withClaim("dom", loggedInUser.getDomain()).withClaim("id", loggedInUser.getClientUuid()).withClaim("sub", loggedInUser.getUuid()).sign(algorithm);
-
+                // cms/cmsApi scope for sub (user uuid), dom (domain), id (client uuid), data (username) ?
+                // probably no longer require data(username) claim as this can be retrieved from the ID token.
+                String token = JWT.create().withIssuer("Gemosity Ltd").withExpiresAt(expiresAt).withIssuedAt(tokenIssuedAt)
+                        .withClaim("sub", loggedInUser.getUuid())
+                        .withClaim("data", loggedInUser.getUsername())
+                        .withClaim("dom", loggedInUser.getDomain())
+                        .withClaim("id", loggedInUser.getClientUuid())
+                        .sign(algorithm);
 
                 oauthToken = new OAuthToken();
                 oauthToken.setAccess_token(token);
