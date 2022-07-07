@@ -45,29 +45,22 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public String generateIDToken(String userUuid) {
-        UserProfile userProfile = userPersistence.findByUuid(userUuid);
-
-        return null;
-    }
-
-    @Override
     public Map<String, Object> findMapByUuid(String userUuid) {
         Map<String, Object> userProfileMap = userPersistence.findMapByUuid(userUuid);
-        String name = "";
+        String fullName;
 
         if(userProfileMap.get("name") == null) {
             if(userProfileMap.get("given_name") != null) {
                 if (userProfileMap.get("family_name") != null) {
-                    name = (String) userProfileMap.get("given_name");
-                    name = name.trim();
-                    name = name + " " + userProfileMap.get("family_name");
+                    fullName = (String) userProfileMap.get("given_name");
+                    fullName = fullName.trim();
+                    fullName = fullName + " " + userProfileMap.get("family_name");
                 } else {
-                    name = (String) userProfileMap.get("given_name");
-                    name = name.trim();
+                    fullName = (String) userProfileMap.get("given_name");
+                    fullName = fullName.trim();
                 }
 
-                userProfileMap.put("name", name);
+                userProfileMap.put("name", fullName);
             }
         }
 
