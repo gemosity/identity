@@ -15,6 +15,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -32,6 +33,10 @@ public class UserControllerTest {
     @Value("${login.domain}")
     private String domain;
 
+    private WebClient webClient;
+    private MultiValueMap<String, ResponseCookie> authCookies = new LinkedMultiValueMap<>();
+    private OAuthToken oAuthToken;
+
     @LocalServerPort
     private int randomPort;
 
@@ -39,17 +44,17 @@ public class UserControllerTest {
         objectMapper = new ObjectMapper();
     }
 
-    @Test
-    public void oidcUserInfoEndpoint() throws URISyntaxException {
-        WebClient webClient = WebClient.builder()
-                .baseUrl("http://localhost:" + randomPort)
-                .build();
-
-        MultiValueMap<String, ResponseCookie> authCookies = new LinkedMultiValueMap<>();
+    @PostConstruct
+    public void authenticate() throws URISyntaxException {
 
         String loginCredentialsJson = generateLoginCredentials(username, password, domain);
 
-        OAuthToken oAuthToken = webClient.post()
+        webClient = WebClient.builder()
+                .baseUrl("http://localhost:" + randomPort)
+                .build();
+
+
+        oAuthToken = webClient.post()
                 .uri(new URI("http://localhost:" + randomPort + "/api/oauth/login"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
@@ -63,6 +68,10 @@ public class UserControllerTest {
                     return response.bodyToMono(OAuthToken.class);
                 })
                 .block();
+    }
+
+    @Test
+    public void oidcUserInfoEndpoint() throws URISyntaxException {
 
         String idTokenJwt = webClient.get()
                 .uri(new URI("http://localhost:" + randomPort + "/oidc/userinfo/jwt"))
@@ -74,10 +83,7 @@ public class UserControllerTest {
                 .bodyToMono(String.class)
                 .block();
 
-        System.out.println(oAuthToken.getId_token());
-        System.out.println("idTokenJwt: " + idTokenJwt);
         Assertions.assertEquals(true, idTokenJwt.contains(oAuthToken.getId_token()));
-
     }
 
     private String generateLoginCredentials(String username, String password, String domain) {
