@@ -73,18 +73,36 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public Map<String, Object> fetchUserProfile(String authToken, String signature, String contentType) {
-        Map<String, Object> retValue = null;
+    public UserProfile fetchUserProfile(String json_auth_token, String signature) {
+        UserProfile userProfile = null;
+        String authToken = json_auth_token.replace("Bearer ", "");
+
         Map<String, Claim> claims = jwtService.verifyToken(authToken, signature);
 
-        String subUuid = claims.get("sub").asString();
-        Map<String, Object> userProfile = userPersistence.findMapByUuid(subUuid);
-        String idTokenJWT = null;
+        if(claims != null) {
+            String subUuid = claims.get("sub").asString();
 
-        if(contentType.contentEquals("application/jwt")) {
-             idTokenJWT = jwtService.generateIDToken(userProfile, "profile");
-             retValue = new HashMap<>();
-             retValue.put("id", idTokenJWT);
+            userProfile = userPersistence.findByUuid(subUuid);
+        }
+
+        return userProfile;
+    }
+
+    @Override
+    public Map<String, Object> fetchUserProfileAsMap(String json_auth_token, String signature) {
+        Map<String, Object> retValue = null;
+        String authToken = json_auth_token.replace("Bearer ", "");
+
+        Map<String, Claim> claims = jwtService.verifyToken(authToken, signature);
+
+        if(claims != null) {
+            String idTokenJWT;
+            String subUuid = claims.get("sub").asString();
+            Map<String, Object> userProfile = userPersistence.findMapByUuid(subUuid);
+
+            idTokenJWT = jwtService.generateIDToken(userProfile, "profile");
+            retValue = new HashMap<>();
+            retValue.put("id", idTokenJWT);
         }
 
         return retValue;

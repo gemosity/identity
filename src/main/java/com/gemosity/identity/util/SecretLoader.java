@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 
 @Component
 public class SecretLoader {
+
     // byte[] falls outside scope of GC. Hence more secure.
     public byte[] loadSecret() {
 

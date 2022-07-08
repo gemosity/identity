@@ -15,5 +15,6 @@ public interface IUserService {
     UserProfile findByUuid(String userUuid);
     Map<String, Object> findMapByUuid(String userUuid) ;
 
-    Map<String, Object> fetchUserProfile(String authToken, String signature, String contentType);
+    UserProfile fetchUserProfile(String authToken, String signature) ;
+    Map<String, Object> fetchUserProfileAsMap(String authToken, String signature);
 }

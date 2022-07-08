@@ -32,7 +32,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/oauth/login").permitAll()
                 .antMatchers("/api/oauth/logout").permitAll()
                 .antMatchers("/migrate").permitAll()
-                .antMatchers("/oidc/userinfo").permitAll()
+//                .antMatchers("/oidc/userinfo").permitAll()
+//                .antMatchers("/oidc/userinfo/jwt").permitAll()
 
 //                .antMatchers("/api/json/auth/addUser").permitAll()
 //                .antMatchers("/api/json/auth/changePassword").permitAll()

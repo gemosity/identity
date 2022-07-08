@@ -5,8 +5,10 @@ import com.gemosity.identity.dto.UserProfile;
 import com.gemosity.identity.service.IUserService;
 import com.gemosity.identity.service.UserServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,32 +39,45 @@ public class UserController {
         return userService.deleteUser(userDTO);
     }
 
+
+    @GetMapping(value = "/oidc/userinfo", produces = MediaType.APPLICATION_JSON_VALUE)
+    public UserProfile userInfoEndpoint(@CookieValue(value = "sessionId") String signature,
+                                                @RequestHeader(value="Authorization") String authToken) {
+
+        return userService.fetchUserProfile(authToken, signature);
+    }
+
     @JsonAnyGetter
-    @GetMapping(path = "/oidc/userinfo")
-    public Map<String, Object> userInfoEndpoint(@CookieValue(value = "sessionId") String signature,
-                                                @RequestHeader(value="Authorization") String authToken,
-                                                @RequestHeader(value="Content-Type") String contentType) {
+    @GetMapping(value = "/oidc/userinfo/jwt")
+    public Map<String, Object> userInfoEndpointAsJwt(HttpServletResponse http_response, @CookieValue(value = "sessionId") String signature,
+                                                     @RequestHeader(value="Authorization") String authToken) {
 
-        /*
-               application/json
-               application/jwt (OAuthToken with id_token set???)
+        return userService.fetchUserProfileAsMap(authToken, signature);
+    }
 
-                Requires valid access token to lookup the user info. The endpoint returns all the associated claims
-                granted. Requires at least openid scope.
-                HTTP/1.1 200 OK
-                Content-Type: application/json
-
-                {
-                    "given_name": "Joe",
-                    "family_name": "Bloggs",
-                    "name": "Joe Bloggs",
-                    "sub": "4353456346",
-                    "role": [
-                        "admin",
-                    ]
-                }
-         */
-
+//    @JsonAnyGetter
+//    @GetMapping(path = "/oidc/userinfo/jwt")
+//    public Map<String, Object> userInfoEndpointTest(@CookieValue(value = "sessionId") String signature,
+//                                                @RequestHeader(value="Authorization") String authToken) {
+//
+//        /*
+//               application/json
+//               application/jwt (OAuthToken with id_token set???)
+//                Requires valid access token to lookup the user info. The endpoint returns all the associated claims
+//                granted. Requires at least openid scope.
+//                HTTP/1.1 200 OK
+//                Content-Type: application/json
+//                {
+//                    "given_name": "Joe",
+//                    "family_name": "Bloggs",
+//                    "name": "Joe Bloggs",
+//                    "sub": "4353456346",
+//                    "role": [
+//                        "admin",
+//                    ]
+//                }
+//         */
+//
 //        List<String> roles = new ArrayList<>();
 //        roles.add("admin");
 //        roles.add("user");
@@ -72,8 +87,7 @@ public class UserController {
 //        props.put("family_name", "Bloggs");
 //        props.put("name", "Joe Bloggs");
 //        props.put("role", roles);
-        Map<String, Object> props = userService.fetchUserProfile(authToken, signature, contentType);
-
-        return props;
-    }
+//
+//        return props;
+//    }
 }
