@@ -47,7 +47,7 @@ public class JwtServiceTests {
         userCredentials.setUsername("username");
         userCredentials.setDomain("default");
         userCredentials.setClientUuid("clientUuid");
-        OAuthToken oAuthToken = authService.issueToken(userCredentials, tokenValidForMins);
+        OAuthToken oAuthToken = authService.issueToken(userCredentials, "", tokenValidForMins);
 
         Date tokenIssuedAt = new Date();
         expiresAtCal.setTime(tokenIssuedAt);
@@ -66,7 +66,7 @@ public class JwtServiceTests {
     @Test
     void issueTokenWithNullCredentials() {
         int tokenValidForMins = 5;
-        OAuthToken oAuthToken = authService.issueToken(null, tokenValidForMins);
+        OAuthToken oAuthToken = authService.issueToken(null, "", tokenValidForMins);
 
         Assertions.assertEquals(null, oAuthToken);
     }

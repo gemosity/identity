@@ -1,5 +1,6 @@
 package com.gemosity.identity.dto;
 
+// Not needed
 public class OAuthAuthorizeRequest {
     private String response_type;
     private String client_id;

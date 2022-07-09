@@ -1,6 +1,7 @@
 package com.gemosity.identity.service;
 
 import com.auth0.jwt.interfaces.Claim;
+import com.gemosity.identity.dto.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
@@ -12,10 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import com.gemosity.identity.dto.CredentialDTO;
-import com.gemosity.identity.dto.LoginCredentials;
-import com.gemosity.identity.dto.OAuthAuthorizeRequest;
-import com.gemosity.identity.dto.OAuthToken;
 import com.gemosity.identity.util.AuthTokenWrapper;
 import com.gemosity.identity.util.PasswordEncoder;
 
@@ -25,11 +22,17 @@ public class AuthService implements IAuthService {
     private static final Logger log = LogManager.getLogger(AuthService.class);
 
     private final AuthenticationMethod authenticationMethod;
+    private final IUserService userService;
     private final CredentialsService credentialsService;
+    private final JwtService jwtService;
 
-    public AuthService(CredentialsService credentialsService, JwtAndCookieAuthentication jwtService) {
+    public AuthService(CredentialsService credentialsService, UserServiceImpl userService,
+                       JwtAndCookieAuthentication jwtAndCookieAuthentication,
+                       JwtService jwtService) {
         this.credentialsService = credentialsService;
-        this.authenticationMethod = jwtService;
+        this.userService = userService;
+        this.authenticationMethod = jwtAndCookieAuthentication;
+        this.jwtService = jwtService;
     }
 
     public OAuthToken loginUser(HttpServletRequest http_request,
@@ -42,12 +45,13 @@ public class AuthService implements IAuthService {
         OAuthToken authenticationToken = new OAuthToken();
         Map<String, String> properties = new HashMap<String, String>();
 
-        System.out.println(getIpAddress(http_request));
+        log.info("Login user from " + getIpAddress(http_request));
 
         Instant instant = Instant.now();
 
         log.info("domain:" + loginCredentials.getDomain() + " user " + loginCredentials.getUsername());
-        Optional<CredentialDTO> credentialObj = credentialsService.fetchCredentials(loginCredentials.getDomain(), loginCredentials.getUsername());
+        Optional<CredentialDTO> credentialObj = credentialsService.fetchCredentials(loginCredentials.getDomain(),
+                loginCredentials.getUsername());
 
         if (credentialObj.isPresent()) {
 
@@ -61,7 +65,15 @@ public class AuthService implements IAuthService {
                 if (validPassword) {
                     log.info("Password is valid");
 
-                    authenticationToken = authenticationMethod.authenticateUser(http_request, http_response, userCredentials);
+                    //UserProfile userProfile = userService.findByUuid(userCredentials.getUuid());
+                    Map<String, Object> userProfile = userService.findMapByUuid(userCredentials.getUuid());
+
+                    String idToken = jwtService.generateIDToken(userProfile, "profile");
+
+                    authenticationToken = authenticationMethod.authenticateUser(http_request,
+                            http_response,
+                            userCredentials,
+                            idToken);
 
                     if (authenticationToken == null) {
                         log.error("Unable to generate authenticationToken");
@@ -119,30 +131,55 @@ public class AuthService implements IAuthService {
 
         if(claims != null) {
 
-            oauthToken = new OAuthToken();
-            String domain = claims.get("dom").asString();
-            String data = claims.get("data").asString();
-            Optional<CredentialDTO> credentialObj = credentialsService.fetchCredentials(domain, data);
+            Claim domainClaim = claims.get("dom");
+            Claim dataClaim = claims.get("data");
 
-            if (credentialObj.isPresent()) {
-                CredentialDTO specifiedUser = credentialObj.get();
+            if(domainClaim != null && dataClaim != null) {
+                oauthToken = new OAuthToken();
 
-                oauthToken = authenticationMethod.refreshUserAuthentication(http_response, specifiedUser);
+                Optional<CredentialDTO> credentialObj = credentialsService.fetchCredentials(domainClaim.asString(),
+                        dataClaim.asString());
 
-            } else {
-                properties.put("error_msg", "No match for username");
-                log.info("No match for username ");
+                if (credentialObj.isPresent()) {
+                    CredentialDTO specifiedUser = credentialObj.get();
+
+                    oauthToken = authenticationMethod.refreshUserAuthentication(http_response, specifiedUser);
+
+                } else {
+                    properties.put("error_msg", "No match for username");
+                    log.info("No match for username ");
+                }
+
+                oauthToken.setProperties(properties);
             }
-
-            oauthToken.setProperties(properties);
         }
 
         return oauthToken;
     }
 
+    @Override
+    public OAuthToken requestToken(TokenRequest tokenRequest, String authToken, String signature,
+                                   HttpServletResponse http_response) {
+        // Client may request different scope
+        // tokenRequest.getScope()
+
+        OAuthToken oAuthToken = null;
+        if(tokenRequest.getGrant_type() == "refresh_token") {
+            oAuthToken = refreshToken(authToken, signature, http_response);
+        }
+
+        // 'authorization_code' - Convert token returned from /authorize into an Access Token.
+        // 'refresh_token' - Passed in a refresh_token returns a new Access Token and Refresh Token.
+        // 'client_credentials' - Returns an Access Token. No refresh token is included.
+
+        return oAuthToken;
+    }
+
     public OAuthToken authorizeClient(OAuthAuthorizeRequest oAuthAuthorizeRequest,
                                       HttpServletResponse http_response) {
         String responseType = oAuthAuthorizeRequest.getResponse_type();
+
+        // Login user, check user wants to authorize client
 
         // HTTP 302 FOUND - Redirect to application URI
         http_response.setStatus(HttpServletResponse.SC_FOUND);
@@ -151,4 +188,5 @@ public class AuthService implements IAuthService {
 
         return new OAuthToken();
     }
+
 }

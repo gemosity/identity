@@ -3,6 +3,8 @@ package com.gemosity.identity.dto;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class UserProfile {
@@ -10,6 +12,7 @@ public class UserProfile {
     private String uuid;
     private String clientUuid;
 
+    // Following names require "profile" scope
     private String given_name;
     private String middle_name;
     private String family_name;
@@ -20,7 +23,7 @@ public class UserProfile {
     private long leaving_date;
 
     private String picture;
-    private String roles;
+    private List<String> roles;
 
     private int maxConcurrentSessions;
 }
