@@ -10,6 +10,7 @@ import com.couchbase.client.java.kv.MutationResult;
 import com.couchbase.client.java.manager.bucket.BucketSettings;
 import com.couchbase.client.java.manager.bucket.BucketType;
 import com.couchbase.client.java.manager.collection.CollectionSpec;
+import com.couchbase.client.java.transactions.TransactionGetResult;
 import com.gemosity.identity.dto.CredentialDTO;
 import com.gemosity.identity.persistence.ICredentialsPersistence;
 import com.gemosity.identity.persistence.couchbase.CouchbaseInstance;
@@ -28,8 +29,8 @@ public class CredentialRepository implements ICredentialsPersistence {
 
     private static final Logger log = LogManager.getLogger(CredentialRepository.class);
 
-    private String bucketName = "user_credentials";
-    private String collectionName = "credentials";
+    private static final String bucketName = "user_credentials";
+    private static final String collectionName = "credentials";
     private CouchbaseInstance couchbaseInstance;
     private Collection credentialsCollection;
     private UuidUtil uuidUtil;
@@ -55,7 +56,6 @@ public class CredentialRepository implements ICredentialsPersistence {
 
         } catch (BucketNotFoundException e) {
             log.info("Creating identity bucket collection");
-            e.printStackTrace();
             credentialsBucket = createCredentialsBucket();
         }
 
@@ -87,14 +87,20 @@ public class CredentialRepository implements ICredentialsPersistence {
 
     @Override
     public CredentialDTO createCredentials(CredentialDTO credentialDTO) {
-        MutationResult mutationResult = null;
+
+        //MutationResult mutationResult = null;
         String uuid = uuidUtil.generateUuid();
 
         try {
             credentialDTO.setUuid(uuid);
             credentialDTO.setCreated(Instant.now().getEpochSecond());
             credentialDTO.setModified(Instant.now().getEpochSecond());
-            mutationResult = credentialsCollection.insert(credentialDTO.getUsername(), credentialDTO);
+
+            couchbaseInstance.fetchCluster().transactions().run((transaction) -> {
+                TransactionGetResult transactionGetResult = transaction.insert(credentialsCollection, credentialDTO.getUsername(), credentialDTO);
+            });
+
+            // mutationResult = credentialsCollection.insert(credentialDTO.getUsername(), credentialDTO);
         } catch (DocumentExistsException e) {
             return null;
         }

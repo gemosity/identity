@@ -50,7 +50,6 @@ public class SessionRepository implements ISessionPersistence {
 
         } catch (BucketNotFoundException e) {
             log.info("Creating session bucket collection");
-            e.printStackTrace();
             credentialsBucket = createSessionsBucket();
         }
 
