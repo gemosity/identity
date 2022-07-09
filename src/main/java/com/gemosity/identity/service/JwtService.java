@@ -54,12 +54,10 @@ public class JwtService {
                 String[] scopes = scope.split(",");
 
                 for(String currentScope: scopes) {
-                    System.out.println("currentScope: " + currentScope);
                     String scopeClaims = defaultScopes.get(currentScope.trim());
                     String[] scopeClaimsArr = scopeClaims.split(",");
 
                     for(String claim: scopeClaimsArr) {
-                        System.out.println("claim: " + claim.trim());
 
                         Object claimContent = userProfile.get(claim.trim());
 
@@ -73,7 +71,7 @@ public class JwtService {
                             } else if (claimContent instanceof ArrayList) {
                                 id_token_builder.withClaim(claim.trim(), (ArrayList) claimContent);
                             }  else {
-                                log.error("Unsupported claim object type for " + claim.trim() + " - " + claimContent.getClass().getName() );
+                                log.error("Unsupported claim object type for " + claim.trim() + " - " + claimContent.getClass().getName());
                             }
                         }
                     }
@@ -85,7 +83,7 @@ public class JwtService {
                 e.printStackTrace();
             }
         } else {
-            log.error("userProfile is NULL");
+            log.error("Invalid user profile");
         }
 
         return id_token;
@@ -127,7 +125,7 @@ public class JwtService {
                 e.printStackTrace();
             }
         } else {
-            log.error("loggedInUser is NULL");
+            log.error("User is not logged in");
         }
 
         return oauthToken;
@@ -162,10 +160,10 @@ public class JwtService {
                     e.printStackTrace();
                 }
             } else {
-                log.error("Access Token is NULL " + json_auth_str);
+                log.error("Invalid authentication token" + json_auth_str);
             }
         } else {
-            log.error("Auth Token missing " + json_auth_str);
+            log.error("Authentication Token missing " + json_auth_str);
         }
 
         return claims;

@@ -69,7 +69,6 @@ public class AuthService implements IAuthService {
                     Map<String, Object> userProfile = userService.findMapByUuid(userCredentials.getUuid());
 
                     String idToken = jwtService.generateIDToken(userProfile, "profile");
-                    System.out.println(idToken);
 
                     authenticationToken = authenticationMethod.authenticateUser(http_request,
                             http_response,

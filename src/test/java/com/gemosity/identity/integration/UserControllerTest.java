@@ -1,8 +1,15 @@
 package com.gemosity.identity.integration;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.JWTVerifier;
+import com.auth0.jwt.interfaces.Claim;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gemosity.identity.dto.LoginCredentials;
 import com.gemosity.identity.dto.OAuthToken;
+import com.gemosity.identity.dto.UserProfile;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +26,7 @@ import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class UserControllerTest {
@@ -71,11 +79,12 @@ public class UserControllerTest {
     }
 
     @Test
-    public void oidcUserInfoEndpoint() throws URISyntaxException {
+    public void oidcUserInfoEndpointAsJWT() throws URISyntaxException {
 
         String idTokenJwt = webClient.get()
-                .uri(new URI("http://localhost:" + randomPort + "/oidc/userinfo/jwt"))
+                .uri(new URI("http://localhost:" + randomPort + "/oidc/userinfo"))
                 .header("Authorization", "Bearer " + generateOAuthTokenJson(oAuthToken))
+                .header("Content-Type", "application/jwt")
                 .cookie("sessionId", authCookies.get("sessionId").get(0).getValue())
                 .cookie("domain", authCookies.get("domain").get(0).getValue())
                 .accept(MediaType.valueOf("application/json"))
@@ -83,7 +92,42 @@ public class UserControllerTest {
                 .bodyToMono(String.class)
                 .block();
 
-        Assertions.assertEquals(true, idTokenJwt.contains(oAuthToken.getId_token()));
+        try {
+            JSONObject jsonObject = new JSONObject(idTokenJwt);
+            String idTokenAsJwt = jsonObject.get("id").toString();
+            DecodedJWT decodedJWT = JWT.decode(idTokenAsJwt);
+            DecodedJWT oauthIdTokenJWT = JWT.decode(oAuthToken.getId_token());
+            Map<String, Claim> claims = decodedJWT.getClaims();
+            Map<String, Claim> oauthIDTokenClaims = oauthIdTokenJWT.getClaims();
+
+            Assertions.assertEquals(claims.get("given_name").asString(), oauthIDTokenClaims.get("given_name").asString());
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Test
+    public void oidcUserInfoEndpointAsJson() throws URISyntaxException {
+
+        UserProfile userProfile = webClient.get()
+                .uri(new URI("http://localhost:" + randomPort + "/oidc/userinfo"))
+                .header("Authorization", "Bearer " + generateOAuthTokenJson(oAuthToken))
+                .header("Content-Type", "application/json")
+                .cookie("sessionId", authCookies.get("sessionId").get(0).getValue())
+                .cookie("domain", authCookies.get("domain").get(0).getValue())
+                .accept(MediaType.valueOf("application/json"))
+                .retrieve()
+                .bodyToMono(UserProfile.class)
+                .block();
+
+
+        DecodedJWT oauthIdTokenJWT = JWT.decode(oAuthToken.getId_token());
+        Map<String, Claim> oauthIDTokenClaims = oauthIdTokenJWT.getClaims();
+
+        Assertions.assertEquals(userProfile.getGiven_name(), oauthIDTokenClaims.get("given_name").asString());
+
     }
 
     private String generateLoginCredentials(String username, String password, String domain) {
