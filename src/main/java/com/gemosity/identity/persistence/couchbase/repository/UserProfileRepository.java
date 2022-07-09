@@ -28,8 +28,8 @@ public class UserProfileRepository implements IUserPersistence {
 
     private static final Logger log = LogManager.getLogger(UserProfileRepository.class);
 
-    private String bucketName = "user_profiles";
-    private String collectionName = "users";
+    private static final String bucketName = "user_profiles";
+    private static final String collectionName = "users";
 
     private UuidUtil uuidUtil;
 
@@ -54,7 +54,6 @@ public class UserProfileRepository implements IUserPersistence {
 
         } catch (BucketNotFoundException e) {
             log.info("Creating identity bucket collection");
-            e.printStackTrace();
             identityBucket = createIdentityBucket();
         }
 
