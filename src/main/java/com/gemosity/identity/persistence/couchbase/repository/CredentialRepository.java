@@ -3,9 +3,11 @@ package com.gemosity.identity.persistence.couchbase.repository;
 import com.couchbase.client.core.error.BucketNotFoundException;
 import com.couchbase.client.core.error.CollectionExistsException;
 import com.couchbase.client.core.error.DocumentExistsException;
+import com.couchbase.client.core.msg.kv.DurabilityLevel;
 import com.couchbase.client.java.Bucket;
 import com.couchbase.client.java.Collection;
 import com.couchbase.client.java.kv.GetResult;
+import com.couchbase.client.java.kv.InsertOptions;
 import com.couchbase.client.java.kv.MutationResult;
 import com.couchbase.client.java.manager.bucket.BucketSettings;
 import com.couchbase.client.java.manager.bucket.BucketType;
@@ -100,7 +102,11 @@ public class CredentialRepository implements ICredentialsPersistence {
                 TransactionGetResult transactionGetResult = transaction.insert(credentialsCollection, credentialDTO.getUsername(), credentialDTO);
             });
 
-            // mutationResult = credentialsCollection.insert(credentialDTO.getUsername(), credentialDTO);
+            // Alternative to transaction since only modifying a single collection, in a single bucket.
+            //InsertOptions insertOptions = InsertOptions.insertOptions();
+            //insertOptions.durability(DurabilityLevel.PERSIST_TO_MAJORITY);
+            //insertOptions.build();
+            //mutationResult = credentialsCollection.insert(credentialDTO.getUsername(), credentialDTO, insertOptions);
         } catch (DocumentExistsException e) {
             return null;
         }
